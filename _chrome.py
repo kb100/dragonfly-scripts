@@ -1,5 +1,6 @@
 from dragonfly import *
-from common import LetterRef, LetterSequenceRef, release, noSpaceNoCaps, executeLetter, executeLetterSequence
+from common import LetterRef, LetterSequenceRef, release, noSpaceNoCaps, executeLetter, executeLetterSequence, \
+    executeSelect
 
 context = AppContext(executable="chrome")
 grammar = Grammar("chrome", context=context)
@@ -74,9 +75,9 @@ rules = MappingRule(
         'show help': Key('escape') + Key('?'),
         'view source': Key('escape') + Key('g,s'),
 
+        '(cell|select) [<n>]': Function(executeSelect, offset=0),
     },
     extras=[
-        # LetterRef('letter'),
         LetterSequenceRef('letter_sequence'),
         Dictation("text"),
         ShortIntegerRef('n', 1, 101)

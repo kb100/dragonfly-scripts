@@ -1,5 +1,5 @@
 ﻿from dragonfly import *
-from common import executeLetter, executeLetterSequence, executeSelect,\
+from common import executeLetter, executeLetterSequence, executeSelect, \
     LetterRef, LetterSequenceRef, release
 
 
@@ -60,9 +60,10 @@ class PycharmGlobalRule(MappingRule):
         '(show params|param info)': Key('c-p'),
         'show type': Key('cs-p'),
         "reformat": Key('ca-l'),
+        "reformat line": Key('escape,V,ca-l,escape'),
         'comment': Key('c-slash'),
         'suggest': Key('a-enter'),
-        '(cell|select) [<n>]': Function(executeSelect),
+        '(cell|select) [<n>]': Function(executeSelect, offset=1),
         'show error': Key('c-f1'),
         'run program': Key('s-f10'),
         'run dot dot dot': Key('as-f10'),
@@ -205,6 +206,7 @@ class NormalModeKeystrokeRule(MappingRule):
         "inside parens": Text("/(\n") + Pause('30') + Key('l'),
         "inside brackets": Text("/\\[\n") + Pause('30') + Key('l'),
         "inside braces": Text("/{\n") + Pause('30') + Key('l'),
+        "inside angles": Text("/<\n") + Pause('30') + Key('l'),
         "transpose": Key("x, p"),
 
         '(after|outside) parens': Text('/)\nl'),
@@ -212,6 +214,7 @@ class NormalModeKeystrokeRule(MappingRule):
         '(after|outside) braces': Text('/}\nl'),
         '(after|outside) singles': Text('/\'\nl'),
         '(after|outside) doubles': Text('/"\nl'),
+        '(after|outside) angles': Text('/>\nl'),
         'after dot': Text('/\\.\nl'),
 
         "kay": Key("escape"),
@@ -262,8 +265,8 @@ gvim_window_rule = MappingRule(
 gvim_tabulator_rule = MappingRule(
     name="gvim_tabulators",
     mapping={
-        "tabulator next": Key("g,t"),
-        "tabulator previous": Key("g,T"),
+        "tab (next|right)": Key("g,t"),
+        "tab (previous|left)": Key("g,T"),
     },
     extras=[]
 )
@@ -390,7 +393,7 @@ class InsertModeEnabler(CompoundRule):
         "change inner (paren|parenthesis|raip|laip)": "c,i,rparen",
         "shift change": "C",
 
-        "sub line": "S",
+        "(sub|change) line": "S",
 
         "(after | append)": "a",
         "shift (after | append)": "A",
@@ -456,6 +459,7 @@ class InsertModeCommands(MappingRule):
         'parens': Key('lparent,rparen,escape,i'),
         'brackets': Key('lbracket,rbracket,escape,i'),
         'braces': Key('lbrace,rbrace,escape,i'),
+        'angles': Key('langle,rangle,escape,i'),
 
         # snippets for snipmate
 

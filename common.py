@@ -88,15 +88,14 @@ class LetterRule(MappingRule):
         '(dot|period)': Key('dot'),
         'double quote': Key('dquote'),
         'equal': Key('equal'),
-        'bang': Key('exclamation'),
-        'hash': Key('hash'),
+        '(bang|exclamation)': Key('exclamation'),
+        '(hash|pound|number sign)': Key('hash'),
         'hyphen': Key('hyphen'),
         'minus': Key('minus'),
         'percent': Key('percent'),
         'plus': Key('plus'),
         'question': Key('question'),
-        # Getting Invalid key name: 'semicolon'
-        # 'semicolon': Key('semicolon'),
+        'semicolon': Key('semicolon'),
         'slash': Key('slash'),
         '[single] quote': Key('squote'),
         'tilde': Key('tilde'),
@@ -132,8 +131,8 @@ def executeLetterSequence(letter_sequence):
     for letter in letter_sequence:
         letter.execute()
 
-def executeSelect(n):
-    n -= 1
+def executeSelect(n, offset=1):
+    n -= offset
     if n > 0:
         Key("down/25:" + str(n) + '/25,enter').execute()
     else:
