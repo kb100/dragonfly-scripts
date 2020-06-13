@@ -1,7 +1,7 @@
 ﻿from dragonfly import *
 from common import executeLetter, executeLetterSequence, executeSelect, \
     LetterRef, LetterSequenceRef, release
-
+from lib.format import FormatRule
 
 def mark(s):
     return Key('m,' + s)
@@ -15,40 +15,6 @@ def goToLine(s):
     return Key("colon") + Text("%(" + s + ")d\n") + Pause('10')
 
 
-config = Config("gvim")
-config.cmd = Section("Language section")
-
-# This searches for a file with the same name as this file (gvim.py), but with
-# the extension ".py" replaced by ".txt". In other words, it loads the
-# configuration specified in the file gvim.txt
-namespace = config.load()
-
-format_functions = {}
-if namespace:
-    print 'found format functions'
-    for name, function in namespace.items():
-        if name.startswith("format_") and callable(function):
-            spoken_form = function.__doc__.strip()
-
-
-            def wrap_function(function):
-                def _function(dictation):
-                    formatted_text = function(dictation)
-                    Text(formatted_text).execute()
-
-                return Function(_function)
-
-
-            action = wrap_function(function)
-            format_functions[spoken_form] = action
-
-if format_functions:
-    class FormatRule(MappingRule):
-
-        mapping = format_functions
-        extras = [Dictation("dictation")]
-else:
-    FormatRule = None
 
 
 class PycharmGlobalRule(MappingRule):
@@ -77,6 +43,8 @@ class PycharmGlobalRule(MappingRule):
         'resume program': Key('f9'),
         'refactor rename': Key('s-f6'),
         'extract variable': Mimic('kay') + Mimic('insert') + Key('ca-v'),
+        'new (file|dot dot dot)': Key('a-f/20,a-insert'),
+        # TODO showhide alt num proj
 
     }
     extras = [IntegerRef('n', 1, 10)]
@@ -87,6 +55,7 @@ class NormalModeKeystrokeRule(MappingRule):
     # exported = False
 
     mapping = {
+        "slap": Key('enter'),
         "[<n>] up": Key("%(n)d,k"),
         "[<n>] down": Key("%(n)d,j"),
         "[<n>] left": Key("%(n)d,h"),
@@ -172,8 +141,9 @@ class NormalModeKeystrokeRule(MappingRule):
         "(yank | copy) a (paren|parenthesis|raip|laip)": Key("y,a,rparen"),
         "(yank | copy) inner (paren|parenthesis|raip|laip)": Key("y,i,rparen"),
         "shift (yank | copy)": Key("Y"),
-        "(yank | copy) line": Key("y,y"),
         '[<n>] duplicate line': Text('Y%(n)dp'),
+        "(yank | copy) line": Key("y,y"),
+        "(yank | copy) <n> lines": Key("%(n)d,Y"),
 
         "paste": Key("p"),
         "(shift|big) paste": Key("P"),
@@ -265,8 +235,8 @@ gvim_window_rule = MappingRule(
 gvim_tabulator_rule = MappingRule(
     name="gvim_tabulators",
     mapping={
-        "tab (next|right)": Key("g,t"),
-        "tab (previous|left)": Key("g,T"),
+        "tap (next|right)": Key("g,t"),
+        "tap (previous|left)": Key("g,T"),
     },
     extras=[]
 )
@@ -396,7 +366,7 @@ class InsertModeEnabler(CompoundRule):
         "(sub|change) line": "S",
 
         "(after | append)": "a",
-        "shift (after | append)": "A",
+        "(shift|big) (after | append)": "A",
 
         "open": "o",
         "(shift|big) open": "O",

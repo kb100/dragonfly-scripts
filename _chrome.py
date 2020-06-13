@@ -74,6 +74,7 @@ rules = MappingRule(
         '[<n>] move tab right': Key('escape') + Text('%(n)d') + Key('>,>'),
         'show help': Key('escape') + Key('?'),
         'view source': Key('escape') + Key('g,s'),
+        'search bar': Key('c-l'),
 
         '(cell|select) [<n>]': Function(executeSelect, offset=0),
     },
