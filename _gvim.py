@@ -135,18 +135,17 @@ class NormalModeKeystrokeRule(MappingRule):
         'until [<n>] <letter>': Text('%(n)dt') + Function(executeLetter),
         'shift until [<n>] <letter>': Text('%(n)dT') + Function(executeLetter),
 
-        "(yank | copy)": Key("y"),
-        "(yank | copy) a paragraph": Key("y,a,p"),
-        "(yank | copy) inner paragraph": Key("y,i,p"),
-        "(yank | copy) a (paren|parenthesis|raip|laip)": Key("y,a,rparen"),
-        "(yank | copy) inner (paren|parenthesis|raip|laip)": Key("y,i,rparen"),
-        "shift (yank | copy)": Key("Y"),
+        "[<letter>] (yank | copy)": Key("dquote") + Function(executeLetter) + Key("y"),
+        "[<letter>] (yank | copy) a paragraph": Key("dquote") + Function(executeLetter) + Key("y,a,p"),
+        "[<letter>] (yank | copy) inner paragraph": Key("dquote") + Function(executeLetter) + Key("y,i,p"),
+        "[<letter>] (yank | copy) a (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key("y,a,rparen"),
+        "[<letter>] (yank | copy) inner (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key("y,i,rparen"),
         '[<n>] duplicate line': Text('Y%(n)dp'),
-        "(yank | copy) line": Key("y,y"),
-        "(yank | copy) <n> lines": Key("%(n)d,Y"),
+        "[<letter>] (yank | copy) line": Key("dquote") + Function(executeLetter) + Key("y,y"),
+        "[<letter>] (yank | copy) <n> lines": Key("dquote") + Function(executeLetter) + Key("%(n)d,Y"),
 
-        "paste": Key("p"),
-        "(shift|big) paste": Key("P"),
+        "[<letter>] paste": Key("dquote") + Function(executeLetter) + Key("p"),
+        "[<letter>] (shift|big) paste": Key("dquote") + Function(executeLetter) + Key("P"),
 
         "replace": Key("r"),
         "shift replace": Key("R"),
@@ -196,7 +195,7 @@ class NormalModeKeystrokeRule(MappingRule):
         ShortIntegerRef("lm", 1, 10000),
         LetterRef('letter')
     ]
-    defaults = {"n": 1, "ln": 1, "lm": 1}
+    defaults = {"n": 1, "ln": 1, "lm": 1, "letter": Key("dquote")}
 
 
 normal_mode_sequence = Repetition(RuleRef(rule=NormalModeKeystrokeRule()),
@@ -356,7 +355,7 @@ class InsertModeEnabler(CompoundRule):
         "change a paragraph": "c,a,p",
         "change inner paragraph": "c,i,p",
         "change a double quote": 'c,a,dquote',
-        "change inner double quote": "",
+        "change inner double quote": "c,i,dquote",
         "change a quote": 'c,a,quote',
         "change inner quote": "c,i,quote",
         "change a (paren|parenthesis|raip|laip)": "c,a,rparen",
