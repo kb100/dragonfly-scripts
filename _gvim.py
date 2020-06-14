@@ -3,6 +3,7 @@ from common import executeLetter, executeLetterSequence, executeSelect, \
     LetterRef, LetterSequenceRef, release
 from lib.format import FormatRule
 
+
 def mark(s):
     return Key('m,' + s)
 
@@ -13,8 +14,6 @@ def jumpMark(s):
 
 def goToLine(s):
     return Key("colon") + Text("%(" + s + ")d\n") + Pause('10')
-
-
 
 
 class PycharmGlobalRule(MappingRule):
@@ -41,11 +40,11 @@ class PycharmGlobalRule(MappingRule):
         'step over': Key('f8'),
         'step into': Key('f7'),
         'resume program': Key('f9'),
-        'refactor rename': Key('s-f6'),
+        'rename': Key('s-f6'),
         'extract variable': Mimic('kay') + Mimic('insert') + Key('ca-v'),
         'new (file|dot dot dot)': Key('a-f/20,a-insert'),
-        # TODO showhide alt num proj
-
+        'panel <n>': Key('a-%(n)d'),
+        'close tab': Key('c-f4'),
     }
     extras = [IntegerRef('n', 1, 10)]
     defaults = {'n': 1, }
@@ -63,7 +62,7 @@ class NormalModeKeystrokeRule(MappingRule):
         "[<n>] page up": Key("c-b:%(n)d"),
         "[<n>] page down": Key("c-f:%(n)d"),
         "hat": Key("caret"),
-        "dollar": Key("dollar"),
+        "(dollar|doll)": Key("dollar"),
         "match": Key("percent"),
         "doc home": Key("c-home"),
         "doc end": Key("c-end"),
@@ -138,8 +137,10 @@ class NormalModeKeystrokeRule(MappingRule):
         "[<letter>] (yank | copy)": Key("dquote") + Function(executeLetter) + Key("y"),
         "[<letter>] (yank | copy) a paragraph": Key("dquote") + Function(executeLetter) + Key("y,a,p"),
         "[<letter>] (yank | copy) inner paragraph": Key("dquote") + Function(executeLetter) + Key("y,i,p"),
-        "[<letter>] (yank | copy) a (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key("y,a,rparen"),
-        "[<letter>] (yank | copy) inner (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key("y,i,rparen"),
+        "[<letter>] (yank | copy) a (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key(
+            "y,a,rparen"),
+        "[<letter>] (yank | copy) inner (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key(
+            "y,i,rparen"),
         '[<n>] duplicate line': Text('Y%(n)dp'),
         "[<letter>] (yank | copy) line": Key("dquote") + Function(executeLetter) + Key("y,y"),
         "[<letter>] (yank | copy) <n> lines": Key("dquote") + Function(executeLetter) + Key("%(n)d,Y"),
@@ -185,6 +186,7 @@ class NormalModeKeystrokeRule(MappingRule):
         '(after|outside) doubles': Text('/"\nl'),
         '(after|outside) angles': Text('/>\nl'),
         'after dot': Text('/\\.\nl'),
+        'after comma': Text('/,\nl'),
 
         "kay": Key("escape"),
     }
@@ -277,7 +279,7 @@ class ExModeEnabler(CompoundRule):
 
     def _process_recognition(self, node, extras):
         exModeBootstrap.disable()
-        normalModeGrammar.disable()
+        NormalModeGrammar.disable()
         ExModeGrammar.enable()
         Key("colon").execute()
         print "ExMode grammar enabled"
@@ -296,7 +298,7 @@ class ExModeDisabler(CompoundRule):
     def _process_recognition(self, node, extras):
         ExModeGrammar.disable()
         exModeBootstrap.enable()
-        normalModeGrammar.enable()
+        NormalModeGrammar.enable()
         if extras["command"] == "cancel":
             print "ex mode command canceled"
             Key("escape").execute()
@@ -340,8 +342,6 @@ class ExModeCommands(MappingRule):
     defaults = {"n": 1, }
 
 
-# ---------------------------------------------------------------------------
-
 class InsertModeEnabler(CompoundRule):
     spec = "<command>"
     extras = [Choice("command", {
@@ -373,7 +373,7 @@ class InsertModeEnabler(CompoundRule):
 
     def _process_recognition(self, node, extras):
         InsertModeBootstrap.disable()
-        normalModeGrammar.disable()
+        NormalModeGrammar.disable()
         InsertModeGrammar.enable()
         for string in extras["command"].split(','):
             key = Key(string)
@@ -393,7 +393,7 @@ class InsertModeDisabler(CompoundRule):
     def _process_recognition(self, node, extras):
         InsertModeGrammar.disable()
         InsertModeBootstrap.enable()
-        normalModeGrammar.enable()
+        NormalModeGrammar.enable()
         Key("escape").execute()
         if extras["command"] == "cancel":
             Key("u").execute()
@@ -407,6 +407,9 @@ class InsertModeDisabler(CompoundRule):
 class InsertModeCommands(MappingRule):
     mapping = {
         "<text>": Text("%(text)s"),
+        "say <text>": release + Text('%(text)s'),
+        "spell <letter_sequence>": Function(executeLetterSequence),
+
         "[<n>] (scratch|Dell)": Key("c-w:%(n)d"),
         "[<n>] slap": Key("enter:%(n)d"),
         "[<n>] tab": Key("tab:%(n)d"),
@@ -414,9 +417,6 @@ class InsertModeCommands(MappingRule):
         "(scratch|Dell) line": Key("c-u"),
         "[<n>] left": Key("left:%(n)d"),
         "[<n>] right": Key("right:%(n)d"),
-        "spell <letter_sequence>": Function(executeLetterSequence),
-
-        "say <text>": release + Text('%(text)s'),
 
         "assign": Key("space,equal,space"),
         "plus": Key("space,plus,space"),
@@ -425,11 +425,24 @@ class InsertModeCommands(MappingRule):
         "equals": Key("space,equal,equal,space"),
         "not equals": Key("space,exclamation,equal,space"),
         "triple quote": Key("dquote,dquote,dquote"),
-        'parens': Key('lparent,rparen,escape,i'),
+        'parens': Key('lparen,rparen,escape,i'),
         'brackets': Key('lbracket,rbracket,escape,i'),
         'braces': Key('lbrace,rbrace,escape,i'),
         'angles': Key('langle,rangle,escape,i'),
+        'quotes': Key('squote,squote,escape,i'),
+        'double quotes': Key('dquote,dquote,escape,i'),
 
+        '(after|outside) parens': Key('escape/10')+Text('/)\na'),
+        '(after|outside) brackets': Key('escape/10')+Text('/]\na'),
+        '(after|outside) braces': Key('escape/10')+Text('/}\na'),
+        '(after|outside) singles': Key('escape/10')+Text('/\'\na'),
+        '(after|outside) doubles': Key('escape/10')+Text('/"\na'),
+        '(after|outside) angles': Key('escape/10')+Text('/>\na'),
+        'after dot': Key('escape/10')+Text('/\\.\na'),
+        'after colon': Key('escape/10')+Text('/:\na'),
+        'after equal': Key('escape/10')+Text('/=\na'),
+        'after comma': Key('escape/10')+Text('/,\na'),
+        'after (doll|dollar)': Key('escape/10,A'),
         # snippets for snipmate
 
         "comp list": Text("compl\t"),
@@ -496,19 +509,13 @@ InsertModeGrammar.add_rule(FormatRule())
 InsertModeGrammar.load()
 InsertModeGrammar.disable()
 
-
-def _process_begin(self, executable, title, handle):
-    print "begin", self, self.loaded, self.enabled, self.rule_names, self.active_rules
-
-
-Grammar._process_begin = _process_begin
-normalModeGrammar = Grammar("NormalMode grammar", context=gvim_context)
-normalModeGrammar.add_rule(NormalModeRepeatRule())
-normalModeGrammar.add_rule(gvim_window_rule)
-normalModeGrammar.add_rule(gvim_tabulator_rule)
-normalModeGrammar.add_rule(gvim_general_rule)
-normalModeGrammar.add_rule(gvim_navigation_rule)
-normalModeGrammar.load()
+NormalModeGrammar = Grammar("NormalMode grammar", context=gvim_context)
+NormalModeGrammar.add_rule(NormalModeRepeatRule())
+NormalModeGrammar.add_rule(gvim_window_rule)
+NormalModeGrammar.add_rule(gvim_tabulator_rule)
+NormalModeGrammar.add_rule(gvim_general_rule)
+NormalModeGrammar.add_rule(gvim_navigation_rule)
+NormalModeGrammar.load()
 
 pycharm_global_grammar = Grammar('pycharm global grammar', context=gvim_context)
 pycharm_global_grammar.add_rule(PycharmGlobalRule())
@@ -517,9 +524,9 @@ pycharm_global_grammar.load()
 
 # Unload function which will be called at unload time.
 def unload():
-    global normalModeGrammar
-    if normalModeGrammar: normalModeGrammar.unload()
-    normalModeGrammar = None
+    global NormalModeGrammar
+    if NormalModeGrammar: NormalModeGrammar.unload()
+    NormalModeGrammar = None
 
     global ExModeGrammar
     if ExModeGrammar: ExModeGrammar.unload()
