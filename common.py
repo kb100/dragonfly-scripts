@@ -1,135 +1,118 @@
 from dragonfly import *
 
-
 release = Key("shift:up, ctrl:up")
 
-class LetterRule(MappingRule):
-    exported = True
-    mapping = {
-        'alpha': Key('a', static=True),
-        'bravo': Key('b', static=True),
-        'charlie': Key('c', static=True),
-        '(delta|dixie)': Key('d', static=True),
-        'echo': Key('e', static=True),
-        'foxtrot': Key('f', static=True),
-        'golf': Key('g', static=True),
-        'hotel': Key('h', static=True),
-        'india': Key('i', static=True),
-        'juliet': Key('j', static=True),
-        'kilo': Key('k', static=True),
-        'lima': Key('l', static=True),
-        'mike': Key('m', static=True),
-        'november': Key('n', static=True),
-        'oscar': Key('o', static=True),
-        'papa': Key('p', static=True),
-        '(queen|quebec)': Key('q', static=True),
-        'romeo': Key('r', static=True),
-        'sierra': Key('s', static=True),
-        'tango': Key('t', static=True),
-        'uniform': Key('u', static=True),
-        'victor': Key('v', static=True),
-        'whiskey': Key('w', static=True),
-        'x-ray': Key('x', static=True),
-        'yankee': Key('y', static=True),
-        'zulu': Key('z', static=True),
+lowercaseKeyMap = {
+    'alpha': 'a',
+    'bravo': 'b',
+    'charlie': 'c',
+    '(delta|dixie)': 'd',
+    'echo': 'e',
+    'foxtrot': 'f',
+    'golf': 'g',
+    'hotel': 'h',
+    'india': 'i',
+    'juliet': 'j',
+    'kilo': 'k',
+    'lima': 'l',
+    'mike': 'm',
+    'november': 'n',
+    'oscar': 'o',
+    'papa': 'p',
+    '(queen|quebec)': 'q',
+    'romeo': 'r',
+    'sierra': 's',
+    'tango': 't',
+    'uniform': 'u',
+    'victor': 'v',
+    'whiskey': 'w',
+    'x-ray': 'x',
+    'yankee': 'y',
+    'zulu': 'z',
+}
 
-        '(upper|big) alpha': Key('A', static=True),
-        '(upper|big) bravo': Key('B', static=True),
-        '(upper|big) charlie': Key('C', static=True),
-        '(upper|big) (delta|dixie)': Key('D', static=True),
-        '(upper|big) echo': Key('E', static=True),
-        '(upper|big) foxtrot': Key('F', static=True),
-        '(upper|big) golf': Key('G', static=True),
-        '(upper|big) hotel': Key('H', static=True),
-        '(upper|big) india': Key('I', static=True),
-        '(upper|big) juliet': Key('J', static=True),
-        '(upper|big) kilo': Key('K', static=True),
-        '(upper|big) lima': Key('L', static=True),
-        '(upper|big) mike': Key('M', static=True),
-        '(upper|big) november': Key('N', static=True),
-        '(upper|big) oscar': Key('O', static=True),
-        '(upper|big) papa': Key('P', static=True),
-        '(upper|big) (queen|quebec)': Key('Q', static=True),
-        '(upper|big) romeo': Key('R', static=True),
-        '(upper|big) sierra': Key('S', static=True),
-        '(upper|big) tango': Key('T', static=True),
-        '(upper|big) uniform': Key('U', static=True),
-        '(upper|big) victor': Key('V', static=True),
-        '(upper|big) whiskey': Key('W', static=True),
-        '(upper|big) x-ray': Key('X', static=True),
-        '(upper|big) yankee': Key('Y', static=True),
-        '(upper|big) zulu': Key('Z', static=True),
+uppercaseKeyMap = {'(big|upper) ' + spoken: l.upper()
+                   for spoken, l in lowercaseKeyMap.items()}
 
-        'zero': Key('0'),
-        'one': Key('1'),
-        'two': Key('2'),
-        'three': Key('3'),
-        'four': Key('4'),
-        'five': Key('5'),
-        'six': Key('6'),
-        'seven': Key('7'),
-        'eight': Key('8'),
-        'nine': Key('9'),
+digitsKeyMap = {
+    'zero': '0',
+    'one': '1',
+    'two': '2',
+    'three': '3',
+    'four': '4',
+    'five': '5',
+    'six': '6',
+    'seven': '7',
+    'eight': '8',
+    'nine': '9',
+}
 
-        'space': Key('space'),
-        'tab': Key('tab'),
+specialCharacterKeyMap = {
+    'space': 'space',
+    'tab': 'tab',
 
-        'ampersand': Key('ampersand'),
-        'apostrophe': Key('apostrophe'),
-        'asterisk': Key('asterisk'),
-        'at': Key('at'),
-        'backslash': Key('backslash'),
-        'backtick': Key('backtick'),
-        'bar': Key('bar'),
-        'caret': Key('caret'),
-        'colon': Key('colon'),
-        'comma': Key('comma'),
-        'dollar': Key('dollar'),
-        '(dot|period)': Key('dot'),
-        'double quote': Key('dquote'),
-        'equal': Key('equal'),
-        '(bang|exclamation)': Key('exclamation'),
-        '(hash|pound|number sign)': Key('hash'),
-        'hyphen': Key('hyphen'),
-        'minus': Key('minus'),
-        'percent': Key('percent'),
-        'plus': Key('plus'),
-        'question': Key('question'),
-        'semicolon': Key('semicolon'),
-        'slash': Key('slash'),
-        '[single] quote': Key('squote'),
-        'tilde': Key('tilde'),
-        'underscore | score': Key('underscore'),
+    'ampersand': 'ampersand',
+    'apostrophe': 'apostrophe',
+    'asterisk': 'asterisk',
+    'at': 'at',
+    'backslash': 'backslash',
+    'backtick': 'backtick',
+    'bar': 'bar',
+    'caret': 'caret',
+    'colon': 'colon',
+    'comma': 'comma',
+    'dollar': 'dollar',
+    '(dot|period)': 'dot',
+    'double quote': 'dquote',
+    'equal': 'equal',
+    '(bang|exclamation)': 'exclamation',
+    '(hash|pound|number sign)': 'hash',
+    'hyphen': 'hyphen',
+    'minus': 'minus',
+    'percent': 'percent',
+    'plus': 'plus',
+    'question': 'question',
+    'semicolon': 'semicolon',
+    'slash': 'slash',
+    '[single] quote': 'squote',
+    'tilde': 'tilde',
+    'underscore | score': 'underscore',
+    'langle': 'langle',
+    'lace': 'lbrace',
+    'lack': 'lbracket',
+    'lip': 'lparen',
+    'rangle': 'rangle',
+    'race': 'rbrace',
+    'rack': 'rbracket',
+    'rip': 'rparen',
+}
 
-        'langle': Key('langle'),
-        'lace': Key('lbrace'),
-        'lack': Key('lbracket'),
-        'laip': Key('lparen'),
-        'rangle': Key('rangle'),
-        'race': Key('rbrace'),
-        'rack': Key('rbracket'),
-        'raip': Key('rparen'),
-    }
+singleCharacterKeyMap = {}
+singleCharacterKeyMap.update(lowercaseKeyMap)
+singleCharacterKeyMap.update(uppercaseKeyMap)
+singleCharacterKeyMap.update(digitsKeyMap)
+singleCharacterKeyMap.update(specialCharacterKeyMap)
 
 
 def LetterRef(name):
-    return RuleRef(rule=LetterRule(), name=name)
+    return Choice(name, singleCharacterKeyMap)
 
 
-def LetterSequenceRef(name, min=1, max=32):
-    return Repetition(LetterRef(name+'_letter'), min=min, max=max, name=name)
+class LetterSequence(CompoundRule):
+    spec = '<letter_sequence>'
+    extras = [Repetition(LetterRef('letter'), min=1, max=32, name='letter_sequence')]
+
+    def value(self, node):
+        seq = node.get_child_by_name('letter_sequence')
+        return ','.join(seq.value())
+
+
+def LetterSequenceRef(name):
+    return RuleRef(LetterSequence(), name)
 
 
 noSpaceNoCaps = Mimic("\\no-caps-on") + Mimic("\\no-space-on")
 
-
-def executeLetter(letter):
-    letter.execute()
-
-
-def executeLetterSequence(letter_sequence):
-    for letter in letter_sequence:
-        letter.execute()
 
 def executeSelect(n, offset=1):
     n -= offset

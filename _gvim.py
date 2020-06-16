@@ -1,6 +1,5 @@
 ﻿from dragonfly import *
-from common import executeLetter, executeLetterSequence, executeSelect, \
-    LetterRef, LetterSequenceRef, release
+from common import executeSelect, LetterRef, LetterSequenceRef, release
 from lib.format import FormatRule
 
 
@@ -14,6 +13,10 @@ def jumpMark(s):
 
 def goToLine(s):
     return Key("colon") + Text("%(" + s + ")d\n") + Pause('10')
+
+
+def pyCharmAction(s):
+    return Key("cs-a/10") + Text(s) + Pause("50") + Key("enter")
 
 
 class PycharmGlobalRule(MappingRule):
@@ -45,8 +48,14 @@ class PycharmGlobalRule(MappingRule):
         'new (file|dot dot dot)': Key('a-f/20,a-insert'),
         'panel <n>': Key('a-%(n)d'),
         'close tab': Key('c-f4'),
+        'git commit': Key('c-k'),
+        'menu <letter>': Key('a-%(letter)s'),
+
     }
-    extras = [IntegerRef('n', 1, 10)]
+    extras = [
+        IntegerRef('n', 1, 10),
+        LetterRef('letter'),
+    ]
     defaults = {'n': 1, }
 
 
@@ -117,36 +126,34 @@ class NormalModeKeystrokeRule(MappingRule):
         "[<n>] undo": Key("u:%(n)d"),
         "[<n>] redo": Key("c-r:%(n)d"),
 
-        '[<n>] (find|forward) <letter>': Text('%(n)df') + Function(executeLetter),
-        '[<n>] shift find <letter>': Text('%(n)dF') + Function(executeLetter),
-        'find [<n>] <letter>': Text('%(n)df') + Function(executeLetter),
-        'shift find [<n>] <letter>': Text('%(n)dF') + Function(executeLetter),
+        '[<n>] (find|forward) <letter>': Key('%(n)d,f,%(letter)s'),
+        '[<n>] shift find <letter>': Key('%(n)d,F,%(letter)s'),
+        'find [<n>] <letter>': Key('%(n)d,f,%(letter)s'),
+        'shift find [<n>] <letter>': Key('%(n)d,F,%(letter)s'),
 
-        '[<n>] before <letter>': Text('%(n)dt') + Function(executeLetter),
-        '[<n>] shift before <letter>': Text('%(n)dT') + Function(executeLetter),
-        'before [<n>] <letter>': Text('%(n)dt') + Function(executeLetter),
-        'shift before [<n>] <letter>': Text('%(n)dT') + Function(executeLetter),
+        '[<n>] before <letter>': Key('%(n)d,t,%(letter)s'),
+        '[<n>] shift before <letter>': Key('%(n)d,T,%(letter)s'),
+        'before [<n>] <letter>': Key('%(n)d,t,%(letter)s'),
+        'shift before [<n>] <letter>': Key('%(n)d,T,%(letter)s'),
 
         '[<n>] again': Text('%(n)d;'),
         '[<n>] shift again': Text('%(n)d,'),
-        '[<n>] until <letter>': Text('%(n)dt') + Function(executeLetter),
-        '[<n>] shift until <letter>': Text('%(n)dT') + Function(executeLetter),
-        'until [<n>] <letter>': Text('%(n)dt') + Function(executeLetter),
-        'shift until [<n>] <letter>': Text('%(n)dT') + Function(executeLetter),
+        '[<n>] until <letter>': Key('%(n)d,t,%(letter)s'),
+        '[<n>] shift until <letter>': Key('%(n)d,T,%(letter)s'),
+        'until [<n>] <letter>': Key('%(n)d,t,%(letter)s'),
+        'shift until [<n>] <letter>': Key('%(n)d,T,%(letter)s'),
 
-        "[<letter>] (yank | copy)": Key("dquote") + Function(executeLetter) + Key("y"),
-        "[<letter>] (yank | copy) a paragraph": Key("dquote") + Function(executeLetter) + Key("y,a,p"),
-        "[<letter>] (yank | copy) inner paragraph": Key("dquote") + Function(executeLetter) + Key("y,i,p"),
-        "[<letter>] (yank | copy) a (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key(
-            "y,a,rparen"),
-        "[<letter>] (yank | copy) inner (paren|parenthesis|raip|laip)": Key("dquote") + Function(executeLetter) + Key(
-            "y,i,rparen"),
+        "[<letter>] (yank | copy)": Key("dquote,%(letter)s,y"),
+        "[<letter>] (yank | copy) a paragraph": Key("dquote,%(letter)s,y,a,p"),
+        "[<letter>] (yank | copy) inner paragraph": Key("dquote,%(letter)s,y,i,p"),
+        "[<letter>] (yank | copy) a (paren|parenthesis|raip|laip)": Key("dquote,%(letter)s,y,a,rparen"),
+        "[<letter>] (yank | copy) inner (paren|parenthesis|raip|laip)": Key("dquote,%(letter)s,y,i,rparen"),
         '[<n>] duplicate line': Text('Y%(n)dp'),
-        "[<letter>] (yank | copy) line": Key("dquote") + Function(executeLetter) + Key("y,y"),
-        "[<letter>] (yank | copy) <n> lines": Key("dquote") + Function(executeLetter) + Key("%(n)d,Y"),
+        "[<letter>] (yank | copy) line": Key("dquote,%(letter)s,y,y"),
+        "[<letter>] (yank | copy) <n> lines": Key("dquote,%(letter)s,%(n)d,Y"),
 
-        "[<letter>] paste": Key("dquote") + Function(executeLetter) + Key("p"),
-        "[<letter>] (shift|big) paste": Key("dquote") + Function(executeLetter) + Key("P"),
+        "[<letter>] paste": Key("dquote,%(letter)s,p"),
+        "[<letter>] (shift|big) paste": Key("dquote,%(letter)s,P"),
 
         "replace": Key("r"),
         "shift replace": Key("R"),
@@ -154,8 +161,8 @@ class NormalModeKeystrokeRule(MappingRule):
         "(shift left|unindent)": Key("langle,langle"),
         "(shift right|indent)": Key("rangle,rangle"),
 
-        'Mark <letter>': Key('m') + Function(executeLetter),
-        'jump <letter>': Key('backtick') + Function(executeLetter),
+        'Mark <letter>': Key('m,%(letter)s'),
+        'jump <letter>': Key('backtick,%(letter)s'),
         'jump old': Key('c-o'),
         'jump new': Key('c-i'),
 
@@ -195,9 +202,9 @@ class NormalModeKeystrokeRule(MappingRule):
         IntegerRef("n", 1, 101),
         ShortIntegerRef("ln", 1, 10000),
         ShortIntegerRef("lm", 1, 10000),
-        LetterRef('letter')
+        LetterRef('letter'),
     ]
-    defaults = {"n": 1, "ln": 1, "lm": 1, "letter": Key("dquote")}
+    defaults = {"n": 1, "ln": 1, "lm": 1, "letter": "dquote"}
 
 
 normal_mode_sequence = Repetition(RuleRef(rule=NormalModeKeystrokeRule()),
@@ -210,7 +217,6 @@ class NormalModeRepeatRule(CompoundRule):
     defaults = {"n": 1, }
 
     def _process_recognition(self, node, extras):
-        print "Normal repeat rule recognized"
         normal_mode_sequence = extras["normal_mode_sequence"]
         count = extras["n"]
         for i in range(count):
@@ -282,10 +288,6 @@ class ExModeEnabler(CompoundRule):
         NormalModeGrammar.disable()
         ExModeGrammar.enable()
         Key("colon").execute()
-        print "ExMode grammar enabled"
-        print "Available commands:"
-        print '  \n'.join(ExModeCommands.mapping.keys())
-        print "\n(EX MODE)"
 
 
 class ExModeDisabler(CompoundRule):
@@ -300,12 +302,9 @@ class ExModeDisabler(CompoundRule):
         exModeBootstrap.enable()
         NormalModeGrammar.enable()
         if extras["command"] == "cancel":
-            print "ex mode command canceled"
             Key("escape").execute()
         else:
-            print "ex mode command accepted"
             Key("enter").execute()
-        print "\n(NORMAL)"
 
 
 class ExModeCommands(MappingRule):
@@ -378,9 +377,6 @@ class InsertModeEnabler(CompoundRule):
         for string in extras["command"].split(','):
             key = Key(string)
             key.execute()
-        print "Available commands:"
-        print '  \n'.join(InsertModeCommands.mapping.keys())
-        print "\n(INSERT)"
 
 
 class InsertModeDisabler(CompoundRule):
@@ -397,10 +393,6 @@ class InsertModeDisabler(CompoundRule):
         Key("escape").execute()
         if extras["command"] == "cancel":
             Key("u").execute()
-            print "Insert command canceled"
-        else:
-            print "Insert command accepted"
-        print "\n(NORMAL)"
 
 
 # handles InsertMode control structures
@@ -408,8 +400,8 @@ class InsertModeCommands(MappingRule):
     mapping = {
         "<text>": Text("%(text)s"),
         "say <text>": release + Text('%(text)s'),
-        "spell <letter_sequence>": Function(executeLetterSequence),
-
+        "spell <letter_sequence>": Key('%(letter_sequence)s'),
+        # "spell <letter_sequence>": Function(executeLetterSequence),
         "[<n>] (scratch|Dell)": Key("c-w:%(n)d"),
         "[<n>] slap": Key("enter:%(n)d"),
         "[<n>] tab": Key("tab:%(n)d"),
@@ -432,16 +424,16 @@ class InsertModeCommands(MappingRule):
         'quotes': Key('squote,squote,escape,i'),
         'double quotes': Key('dquote,dquote,escape,i'),
 
-        '(after|outside) parens': Key('escape/10')+Text('/)\na'),
-        '(after|outside) brackets': Key('escape/10')+Text('/]\na'),
-        '(after|outside) braces': Key('escape/10')+Text('/}\na'),
-        '(after|outside) singles': Key('escape/10')+Text('/\'\na'),
-        '(after|outside) doubles': Key('escape/10')+Text('/"\na'),
-        '(after|outside) angles': Key('escape/10')+Text('/>\na'),
-        'after dot': Key('escape/10')+Text('/\\.\na'),
-        'after colon': Key('escape/10')+Text('/:\na'),
-        'after equal': Key('escape/10')+Text('/=\na'),
-        'after comma': Key('escape/10')+Text('/,\na'),
+        '(after|outside) parens': Key('escape/10') + Text('/)\na'),
+        '(after|outside) brackets': Key('escape/10') + Text('/]\na'),
+        '(after|outside) braces': Key('escape/10') + Text('/}\na'),
+        '(after|outside) singles': Key('escape/10') + Text('/\'\na'),
+        '(after|outside) doubles': Key('escape/10') + Text('/"\na'),
+        '(after|outside) angles': Key('escape/10') + Text('/>\na'),
+        'after dot': Key('escape/10') + Text('/\\.\na'),
+        'after colon': Key('escape/10') + Text('/:\na'),
+        'after equal': Key('escape/10') + Text('/=\na'),
+        'after comma': Key('escape/10') + Text('/,\na'),
         'after (doll|dollar)': Key('escape/10,A'),
         # snippets for snipmate
 
@@ -479,7 +471,6 @@ class InsertModeCommands(MappingRule):
         IntegerRef("n", 1, 50),
     ]
     defaults = {"n": 1, }
-
 
 gvim_exec_context = AppContext(executable="gvim")
 pycharm_exec_context = AppContext(executable="pycharm")
