@@ -22,6 +22,7 @@ def pyCharmAction(s):
 class PycharmGlobalRule(MappingRule):
     name = 'pycharm global'
     mapping = {
+        'save all': Key('c-s'),
         "go to definition": Key("c-b"),
         'peek definition': Key('cs-i'),
         '(show|peek) docs': Key('c-q'),
@@ -48,9 +49,13 @@ class PycharmGlobalRule(MappingRule):
         'new (file|dot dot dot)': Key('a-f/20,a-insert'),
         'panel <n>': Key('a-%(n)d'),
         'close tab': Key('c-f4'),
+        'close (all but this|others)': pyCharmAction('close others'),
         'git commit': Key('c-k'),
+        'next diff': Key('f7'),
+        'previous diff': Key('s-f7'),
+        'compare next file': Key('a-right'),
+        'compare previous file': Key('a-left'),
         'menu <letter>': Key('a-%(letter)s'),
-
     }
     extras = [
         IntegerRef('n', 1, 10),

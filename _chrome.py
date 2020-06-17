@@ -1,6 +1,5 @@
 from dragonfly import *
-from common import LetterRef, LetterSequenceRef, release, noSpaceNoCaps, executeLetter, executeLetterSequence, \
-    executeSelect
+from common import LetterSequenceRef, release, executeSelect
 
 context = AppContext(executable="chrome")
 grammar = Grammar("chrome", context=context)
@@ -10,7 +9,7 @@ rules = MappingRule(
     mapping={
         "console": Key("cs-j"),
         "(escape|kay)": Key('escape'),
-        "<letter_sequence>": Function(executeLetterSequence),
+        "<letter_sequence>": Key('%(letter_sequence)s'),
         "say <text>": release + Text('%(text)s'),
         "slap": Key("enter"),
 
@@ -42,8 +41,8 @@ rules = MappingRule(
         '(follow|jump) next': Key('escape') + Key('],]'),
         'next frame': Key('escape') + Key('g,f'),
         '(top|main) frame': Key('escape') + Key('g,F'),
-        'mark <letter_sequence>': Key('m') + Function(executeLetterSequence),
-        'go to [mark] <letter_sequence>': Key('escape') + Key('backtick') + Function(executeLetterSequence),
+        'mark <letter_sequence>': Key('m,%(letter_sequence)s'),
+        'go to [mark] <letter_sequence>': Key('escape,backtick,%(letter_sequence)s'),
         "open": Key("escape, o"),
         '(big|shift) open': Key('escape,O'),
         'bookmark': Key('escape') + Key('b'),
@@ -89,7 +88,6 @@ rules = MappingRule(
 )
 
 grammar.add_rule(rules)
-
 grammar.load()
 
 
