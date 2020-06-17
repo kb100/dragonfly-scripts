@@ -1,7 +1,7 @@
 ﻿from dragonfly import *
 from common import executeSelect, LetterRef, LetterSequenceRef, release
 from lib.format import FormatRule
-
+from python_rules import PythonRules
 
 def mark(s):
     return Key('m,' + s)
@@ -403,9 +403,9 @@ class InsertModeDisabler(CompoundRule):
 # handles InsertMode control structures
 class InsertModeCommands(MappingRule):
     mapping = {
-        "<text>": Text("%(text)s"),
+        # "<text>": Text("%(text)s"),
         "say <text>": release + Text('%(text)s'),
-        "spell <letter_sequence>": Key('%(letter_sequence)s'),
+        "<letter_sequence>": Key('%(letter_sequence)s'),
         # "spell <letter_sequence>": Function(executeLetterSequence),
         "[<n>] (scratch|Dell)": Key("c-w:%(n)d"),
         "[<n>] slap": Key("enter:%(n)d"),
@@ -415,13 +415,6 @@ class InsertModeCommands(MappingRule):
         "[<n>] left": Key("left:%(n)d"),
         "[<n>] right": Key("right:%(n)d"),
 
-        "assign": Key("space,equal,space"),
-        "plus": Key("space,plus,space"),
-        "minus": Key("space,minus,space"),
-        "times": Key("space,asterisk,space"),
-        "equals": Key("space,equal,equal,space"),
-        "not equals": Key("space,exclamation,equal,space"),
-        "triple quote": Key("dquote,dquote,dquote"),
         'parens': Key('lparen,rparen,escape,i'),
         'brackets': Key('lbracket,rbracket,escape,i'),
         'braces': Key('lbrace,rbrace,escape,i'),
@@ -463,12 +456,6 @@ class InsertModeCommands(MappingRule):
         "new attr class": Text("attrclass\t"),
         # "try except": Text("tryex\t"),
 
-        "new fixture": Key("f,i,x,tab"),
-        "new method": Key("d,e,f,s,tab"),
-        "new class": Key("c,l,tab"),
-        # "new function": Key("d,e,f,tab"),
-        # "new while loop": Key("w,h,tab"),
-        # "new for loop": Key("f,o,r,tab"),
     }
     extras = [
         LetterSequenceRef('letter_sequence'),
@@ -476,6 +463,30 @@ class InsertModeCommands(MappingRule):
         IntegerRef("n", 1, 50),
     ]
     defaults = {"n": 1, }
+
+
+insert_mode_alternatives = []
+insert_mode_alternatives.append(RuleRef(rule=PythonRules()))
+insert_mode_alternatives.append(RuleRef(rule=InsertModeCommands()))
+insert_mode_alternatives.append(RuleRef(rule=FormatRule()))
+insert_mode_single_action = Alternative(insert_mode_alternatives)
+insert_mode_sequence = Repetition(insert_mode_single_action,
+    min=1, max=16, name="insert_mode_sequence")
+
+class InsertModeRepeatRule(CompoundRule):
+    spec = "<insert_mode_sequence> [[[and] repeat [that]] <n> times]"
+    extras = [insert_mode_sequence, IntegerRef("n", 1, 100), ]
+    defaults = {"n": 1, }
+
+    def _process_recognition(self, node, extras):
+        insert_mode_sequence = extras["insert_mode_sequence"]
+        count = extras["n"]
+        for i in range(count):
+            for action in insert_mode_sequence:
+                action.execute()
+        release.execute()
+
+
 
 gvim_exec_context = AppContext(executable="gvim")
 pycharm_exec_context = AppContext(executable="pycharm")
@@ -499,9 +510,8 @@ InsertModeBootstrap = Grammar("InsertMode bootstrap", context=gvim_context)
 InsertModeBootstrap.add_rule(InsertModeEnabler())
 InsertModeBootstrap.load()
 InsertModeGrammar = Grammar("InsertMode grammar", context=gvim_context)
-InsertModeGrammar.add_rule(InsertModeCommands())
+InsertModeGrammar.add_rule(InsertModeRepeatRule())
 InsertModeGrammar.add_rule(InsertModeDisabler())
-InsertModeGrammar.add_rule(FormatRule())
 InsertModeGrammar.load()
 InsertModeGrammar.disable()
 
