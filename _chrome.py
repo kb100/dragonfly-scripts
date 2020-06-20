@@ -1,8 +1,6 @@
 from dragonfly import *
 from common import LetterSequenceRef, release, executeSelect
 
-context = AppContext(executable="chrome")
-grammar = Grammar("chrome", context=context)
 
 rules = MappingRule(
     name="chrome",
@@ -86,12 +84,13 @@ rules = MappingRule(
         "n": 1
     }
 )
+context = AppContext(executable="chrome")
+chrome_grammar = Grammar("chrome", context=context)
+chrome_grammar.add_rule(rules)
+chrome_grammar.load()
 
-grammar.add_rule(rules)
-grammar.load()
-
-
+EXPORT_GRAMMARS = [chrome_grammar]
 def unload():
-    global grammar
-    if grammar: grammar.unload()
-    grammar = None
+    global chrome_grammar
+    if chrome_grammar: chrome_grammar.unload()
+    chrome_grammar = None

@@ -3,6 +3,7 @@ from common import executeSelect, LetterRef, LetterSequenceRef, release
 from lib.format import FormatRule
 from python_rules import PythonRules
 
+
 def mark(s):
     return Key('m,' + s)
 
@@ -289,9 +290,9 @@ class ExModeEnabler(CompoundRule):
     spec = "execute"
 
     def _process_recognition(self, node, extras):
-        exModeBootstrap.disable()
-        NormalModeGrammar.disable()
-        ExModeGrammar.enable()
+        ex_mode_bootstrap_grammar.disable()
+        normal_mode_grammar.disable()
+        ex_mode_grammar.enable()
         Key("colon").execute()
 
 
@@ -303,9 +304,9 @@ class ExModeDisabler(CompoundRule):
     })]
 
     def _process_recognition(self, node, extras):
-        ExModeGrammar.disable()
-        exModeBootstrap.enable()
-        NormalModeGrammar.enable()
+        ex_mode_grammar.disable()
+        ex_mode_bootstrap_grammar.enable()
+        normal_mode_grammar.enable()
         if extras["command"] == "cancel":
             Key("escape").execute()
         else:
@@ -376,9 +377,9 @@ class InsertModeEnabler(CompoundRule):
     })]
 
     def _process_recognition(self, node, extras):
-        InsertModeBootstrap.disable()
-        NormalModeGrammar.disable()
-        InsertModeGrammar.enable()
+        insert_mode_bootstrap_grammar.disable()
+        normal_mode_grammar.disable()
+        insert_mode_grammar.enable()
         for string in extras["command"].split(','):
             key = Key(string)
             key.execute()
@@ -392,9 +393,9 @@ class InsertModeDisabler(CompoundRule):
     })]
 
     def _process_recognition(self, node, extras):
-        InsertModeGrammar.disable()
-        InsertModeBootstrap.enable()
-        NormalModeGrammar.enable()
+        insert_mode_grammar.disable()
+        insert_mode_bootstrap_grammar.enable()
+        normal_mode_grammar.enable()
         Key("escape").execute()
         if extras["command"] == "cancel":
             Key("u").execute()
@@ -471,7 +472,8 @@ insert_mode_alternatives.append(RuleRef(rule=InsertModeCommands()))
 insert_mode_alternatives.append(RuleRef(rule=FormatRule()))
 insert_mode_single_action = Alternative(insert_mode_alternatives)
 insert_mode_sequence = Repetition(insert_mode_single_action,
-    min=1, max=16, name="insert_mode_sequence")
+                                  min=1, max=16, name="insert_mode_sequence")
+
 
 class InsertModeRepeatRule(CompoundRule):
     spec = "<insert_mode_sequence> [[[and] repeat [that]] <n> times]"
@@ -487,7 +489,6 @@ class InsertModeRepeatRule(CompoundRule):
         release.execute()
 
 
-
 gvim_exec_context = AppContext(executable="gvim")
 pycharm_exec_context = AppContext(executable="pycharm")
 # set the window title to vim in the putty session for the following context to
@@ -496,52 +497,55 @@ vim_putty_context = AppContext(title="vim")
 gvim_context = (gvim_exec_context | vim_putty_context | pycharm_exec_context)
 
 # set up the grammar for vim's ex mode
-exModeBootstrap = Grammar("ExMode bootstrap", context=gvim_context)
-exModeBootstrap.add_rule(ExModeEnabler())
-exModeBootstrap.load()
-ExModeGrammar = Grammar("ExMode grammar", context=gvim_context)
-ExModeGrammar.add_rule(ExModeCommands())
-ExModeGrammar.add_rule(ExModeDisabler())
-ExModeGrammar.load()
-ExModeGrammar.disable()
+ex_mode_bootstrap_grammar = Grammar("ExMode bootstrap", context=gvim_context)
+ex_mode_bootstrap_grammar.add_rule(ExModeEnabler())
+ex_mode_bootstrap_grammar.load()
+ex_mode_grammar = Grammar("ExMode", context=gvim_context)
+ex_mode_grammar.add_rule(ExModeCommands())
+ex_mode_grammar.add_rule(ExModeDisabler())
+ex_mode_grammar.load()
+ex_mode_grammar.disable()
 
 # set up the grammar for vim's insert mode
-InsertModeBootstrap = Grammar("InsertMode bootstrap", context=gvim_context)
-InsertModeBootstrap.add_rule(InsertModeEnabler())
-InsertModeBootstrap.load()
-InsertModeGrammar = Grammar("InsertMode grammar", context=gvim_context)
-InsertModeGrammar.add_rule(InsertModeRepeatRule())
-InsertModeGrammar.add_rule(InsertModeDisabler())
-InsertModeGrammar.load()
-InsertModeGrammar.disable()
+insert_mode_bootstrap_grammar = Grammar("InsertMode bootstrap", context=gvim_context)
+insert_mode_bootstrap_grammar.add_rule(InsertModeEnabler())
+insert_mode_bootstrap_grammar.load()
+insert_mode_grammar = Grammar("InsertMode", context=gvim_context)
+insert_mode_grammar.add_rule(InsertModeRepeatRule())
+insert_mode_grammar.add_rule(InsertModeDisabler())
+insert_mode_grammar.load()
+insert_mode_grammar.disable()
 
-NormalModeGrammar = Grammar("NormalMode grammar", context=gvim_context)
-NormalModeGrammar.add_rule(NormalModeRepeatRule())
-NormalModeGrammar.add_rule(gvim_window_rule)
-NormalModeGrammar.add_rule(gvim_tabulator_rule)
-NormalModeGrammar.add_rule(gvim_general_rule)
-NormalModeGrammar.add_rule(gvim_navigation_rule)
-NormalModeGrammar.load()
+normal_mode_grammar = Grammar("NormalMode", context=gvim_context)
+normal_mode_grammar.add_rule(NormalModeRepeatRule())
+normal_mode_grammar.add_rule(gvim_window_rule)
+normal_mode_grammar.add_rule(gvim_tabulator_rule)
+normal_mode_grammar.add_rule(gvim_general_rule)
+normal_mode_grammar.add_rule(gvim_navigation_rule)
+normal_mode_grammar.load()
 
-pycharm_global_grammar = Grammar('pycharm global grammar', context=gvim_context)
-pycharm_global_grammar.add_rule(PycharmGlobalRule())
-pycharm_global_grammar.load()
+pycharm_grammar = Grammar('pycharm global', context=gvim_context)
+pycharm_grammar.add_rule(PycharmGlobalRule())
+pycharm_grammar.load()
+
+EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, insert_mode_grammar, ex_mode_grammar,
+                   ex_mode_bootstrap_grammar, insert_mode_bootstrap_grammar]
 
 
 # Unload function which will be called at unload time.
 def unload():
-    global NormalModeGrammar
-    if NormalModeGrammar: NormalModeGrammar.unload()
-    NormalModeGrammar = None
+    global normal_mode_grammar
+    if normal_mode_grammar: normal_mode_grammar.unload()
+    normal_mode_grammar = None
 
-    global ExModeGrammar
-    if ExModeGrammar: ExModeGrammar.unload()
-    ExModeGrammar = None
+    global ex_mode_grammar
+    if ex_mode_grammar: ex_mode_grammar.unload()
+    ex_mode_grammar = None
 
-    global InsertModeGrammar
-    if InsertModeGrammar: InsertModeGrammar.unload()
-    InsertModeGrammar = None
+    global insert_mode_grammar
+    if insert_mode_grammar: insert_mode_grammar.unload()
+    insert_mode_grammar = None
 
-    global pycharm_global_grammar
-    if pycharm_global_grammar: pycharm_global_grammar.unload()
-    pycharm_global_grammar = None
+    global pycharm_grammar
+    if pycharm_grammar: pycharm_grammar.unload()
+    pycharm_grammar = None

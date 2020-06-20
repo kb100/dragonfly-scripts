@@ -126,16 +126,16 @@ class SnapWindowRule(CompoundRule):
         self.snap_window(Window.get_foreground(), extras['region'])
 
 
-grammar = Grammar('window control')
-grammar.add_rule(PrintWindowDetails())
-grammar.add_rule(BasicWindowOps())
-grammar.add_rule(SnapWindowRule())
-grammar.add_rule(MoveToMonitorRule())
-grammar.add_rule(FocusWindow())
-grammar.load()
+window_grammar = Grammar('window control')
+window_grammar.add_rule(PrintWindowDetails())
+window_grammar.add_rule(BasicWindowOps())
+window_grammar.add_rule(SnapWindowRule())
+window_grammar.add_rule(MoveToMonitorRule())
+window_grammar.add_rule(FocusWindow())
+window_grammar.load()
 
 
 def unload():
-    global grammar
-    if grammar: grammar.unload()
-    grammar = None
+    global window_grammar
+    if window_grammar: window_grammar.unload()
+    window_grammar = None
