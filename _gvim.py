@@ -70,12 +70,12 @@ class NormalModeKeystrokeRule(MappingRule):
 
     mapping = {
         "slap": Key('enter'),
-        "[<n>] up": Key("%(n)d,k"),
-        "[<n>] down": Key("%(n)d,j"),
-        "[<n>] left": Key("%(n)d,h"),
-        "[<n>] right": Key("%(n)d,l"),
-        "[<n>] page up": Key("c-b:%(n)d"),
-        "[<n>] page down": Key("c-f:%(n)d"),
+        "[<n>] up": Text("%(n)dk"),
+        "[<n>] down": Text("%(n)dj"),
+        "[<n>] left": Text("%(n)dh"),
+        "[<n>] right": Text("%(n)dl"),
+        "[<n>] page up": Key("pageup:%(n)d"),
+        "[<n>] page down": Key("pagedown:%(n)d"),
         "hat": Key("caret"),
         "(dollar|doll)": Key("dollar"),
         "match": Key("percent"),
@@ -94,6 +94,7 @@ class NormalModeKeystrokeRule(MappingRule):
         "previous": Key("N"),
         "[<n>] back": Key("b:%(n)d"),
         "[<n>] (whiskey|word)": Key("w:%(n)d"),
+        "[<n>] (big|upper) (whiskey|word)": Key("W:%(n)d"),
         "[<n>] end": Key("e:%(n)d"),
 
         "Center": Key("z,dot"),
@@ -201,7 +202,17 @@ class NormalModeKeystrokeRule(MappingRule):
         'after dot': Text('/\\.\nl'),
         'after comma': Text('/,\nl'),
 
+        'surround word with (quotes|singles)': Key('c,i,w,squote,squote,escape,s-p'),
+        'surround word with doubles': Key('c,i,w,dquote,dquote,escape,s-p'),
+        'surround big word with (quotes|singles)': Key('c,i,s-w,squote,squote,escape,s-p'),
+        'surround big word with doubles': Key('c,i,s-w,dquote,dquote,escape,s-p'),
+
+        'record macro': Key('q,a'),
+        'stop recording': Key('q'),
+        'play macro': Key('at,a'),
+
         "kay": Key("escape"),
+
     }
     extras = [
         Dictation("text"),
@@ -354,6 +365,8 @@ class InsertModeEnabler(CompoundRule):
         "(shift|big) insert": "I",
 
         "change": "c",
+        "change (big|upper) (word|whiskey)": "c,W",
+        "change (big|upper) inner (word|whiskey)": "c,i,W",
         "change (word|whiskey)": "c,w",
         "change inner (word|whiskey)": "c,i,w",
         "change (echo|end)": "c,e",
@@ -366,6 +379,7 @@ class InsertModeEnabler(CompoundRule):
         "change a (paren|parenthesis|raip|laip)": "c,a,rparen",
         "change inner (paren|parenthesis|raip|laip)": "c,i,rparen",
         "shift change": "C",
+        "change letter": "s",
 
         "(sub|change) line": "S",
 
@@ -411,7 +425,7 @@ class InsertModeCommands(MappingRule):
         "[<n>] (scratch|Dell)": Key("c-w:%(n)d"),
         "[<n>] slap": Key("enter:%(n)d"),
         "[<n>] tab": Key("tab:%(n)d"),
-        "[<n>] backspace": Key("backspace:%(n)d"),
+        "[<n>] back": Key("backspace:%(n)d"),
         "(scratch|Dell) line": Key("c-u"),
         "[<n>] left": Key("left:%(n)d"),
         "[<n>] right": Key("right:%(n)d"),
@@ -420,8 +434,8 @@ class InsertModeCommands(MappingRule):
         'brackets': Key('lbracket,rbracket,escape,i'),
         'braces': Key('lbrace,rbrace,escape,i'),
         'angles': Key('langle,rangle,escape,i'),
-        'quotes': Key('squote,squote,escape,i'),
-        'double quotes': Key('dquote,dquote,escape,i'),
+        '(singles|quotes)': Key('squote,squote,escape,i'),
+        '(doubles|double quotes)': Key('dquote,dquote,escape,i'),
 
         '(after|outside) parens': Key('escape/10') + Text('/)\na'),
         '(after|outside) brackets': Key('escape/10') + Text('/]\na'),
