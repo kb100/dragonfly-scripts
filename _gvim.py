@@ -52,11 +52,13 @@ class PycharmGlobalRule(MappingRule):
         'close tab': Key('c-f4'),
         'close (all but this|others)': pyCharmAction('close others'),
         'git commit': Key('c-k'),
+        'show diff': Key('c-d'),
         'next diff': Key('f7'),
         'previous diff': Key('s-f7'),
         'compare next file': Key('a-right'),
         'compare previous file': Key('a-left'),
         'menu <letter>': Key('a-%(letter)s'),
+        'hide menu': Key('s-escape'),
     }
     extras = [
         IntegerRef('n', 1, 10),
