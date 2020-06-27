@@ -57,41 +57,44 @@ Several concrete usage examples of the commands described above:
 
 """
 
-
 from dragonfly import *  # @UnusedWildImport
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # This rule controls tasks on the taskbar.
 
 class TaskRule(MappingRule):
-
     mapping = {
-               "[open | switch to] task <n>":  Key("space"),
-               "(menu | pop up) task <n>":     Key("space/10,a-space"),
-               "new task <n>":                 Key("s-enter"),
-               "close task <n>":               Key("space/10,a-space/10,c"),
-               "restore task <n>":             Key("space/10,a-space/10,r"),
-               "(minimize | min) task <n>":    Key("space/10,a-space/10,n"),
-               "(maximize | max) task <n>":    Key("space/10,a-space/10,x"),
-              }
-    extras = [IntegerRef("n", 1, 50)]
+        "task [minus] <n>": Key("space"),
+        "(menu | pop up) task [minus] <n>": Key("space/10,a-space"),
+        "new task [minus] <n>": Key("s-enter"),
+        "close task [minus] <n>": Key("space/10,a-space/10,c"),
+        "restore task [minus] <n>": Key("space/10,a-space/10,r"),
+        "(minimize | min) task [minus] <n>": Key("space/10,a-space/10,n"),
+        "(maximize | max) task [minus] <n>": Key("space/10,a-space/10,x"),
+    }
+    extras = [IntegerRef("n", 1, 30)]
 
     def _process_recognition(self, value, extras):
-        count = extras["n"] - 1
-        action = Key("w-b/10, s-tab/10, right:%d/10" % count) + value
+        node = extras['_node']
+        if 'minus' in node.words():
+            count = extras['n']
+            direction = 'left'
+        else:
+            count = extras['n'] - 1
+            direction = 'right'
+        action = Key("w-b/10, s-tab/10, " + direction + ":%d/10" % count) + value
         action.execute()
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # This rule controls icons in the icon tray.
 
 class IconRule(MappingRule):
-
     mapping = {
-               "[open] icon <n>":              Key("enter"),
-               "(menu | pop up) icon <n>":     Key("apps"),
-              }
+        "[open] icon <n>": Key("enter"),
+        "(menu | pop up) icon <n>": Key("apps"),
+    }
     extras = [IntegerRef("n", 1, 12)]
 
     def _process_recognition(self, value, extras):
@@ -100,7 +103,7 @@ class IconRule(MappingRule):
         action.execute()
 
 
-#---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Load the grammar instance and define how to unload it.
 
 taskbar_grammar = Grammar("taskbar")
