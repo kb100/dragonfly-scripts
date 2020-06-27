@@ -62,17 +62,14 @@ class DynamicGrammarStateManager(RecognitionObserver):
                 for name, grammars in self.grammars_grouped_by_module.iteritems()}
 
     def on_begin(self):
-        print "on_begin"
         window = Window.get_foreground()
         if self.is_dynamic_active and not self.context.is_dynamic_active(window.executable, window.title,
                                                                          window.handle):
-            print "if true"
             self.is_dynamic_active = False
             self.states_to_restore_on_window_focus = self.get_current_grammar_states()
             self.set_current_grammar_states(self.static_grammar_states)
         elif not self.is_dynamic_active and self.context.is_dynamic_active(window.executable, window.title,
                                                                            window.handle):
-            print "if else"
             self.is_dynamic_active = True
             self.static_grammar_states = self.get_current_grammar_states()
             self.set_current_grammar_states(self.states_to_restore_on_window_focus)

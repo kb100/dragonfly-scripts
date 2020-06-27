@@ -14,7 +14,7 @@ def reload_natlink():
 
 class GlobalRule(MappingRule):
     mapping = {
-        'mouse': Key('f3'),
+        'mouse': Key('f3,f4/350,f4'),
         "touch": Mouse("left"),
         "touch two": Mouse("left:2"),
         'touch are': Mouse('right'),
