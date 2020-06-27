@@ -27,6 +27,8 @@ def PrintAllWindowDetails():
             print 'title=', window.title
             print 'executable=', window.executable
             print 'window=', window
+
+
 # if __name__ == '__main__':
 #     PrintAllWindowDetails()
 
