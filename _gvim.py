@@ -442,11 +442,12 @@ class InsertModeCommands(MappingRule):
         '(after|outside) singles': Key('escape/10') + Text('/\'\na'),
         '(after|outside) doubles': Key('escape/10') + Text('/"\na'),
         '(after|outside) angles': Key('escape/10') + Text('/>\na'),
-        'after dot': Key('escape/10') + Text('/\\.\na'),
-        'after colon': Key('escape/10') + Text('/:\na'),
-        'after equal': Key('escape/10') + Text('/=\na'),
-        'after comma': Key('escape/10') + Text('/,\na'),
         'after (doll|dollar)': Key('escape/10,A'),
+
+        '[<n>] after <letter>': Key('escape/10,%(n)d,f,%(letter)s,a'),
+        '[<n>] shift after <letter>': Key('escape/10,%(n)d,F,%(letter)s,a'),
+        '[<n>] before <letter>': Key('escape/10,%(n)d,f,%(letter)s,i'),
+        '[<n>] shift before <letter>': Key('%(n)d,F,%(letter)s,i'),
         # snippets for snipmate
 
         "comp list": Text("compl\t"),
@@ -473,6 +474,7 @@ class InsertModeCommands(MappingRule):
     }
     extras = [
         LetterSequenceRef('letter_sequence'),
+        LetterRef('letter'),
         Dictation("text"),
         IntegerRef("n", 1, 50),
     ]
