@@ -137,13 +137,9 @@ class NormalModeKeystrokeRule(MappingRule):
 
         '[<n>] (find|forward) <letter>': Key('%(n)d,f,%(letter)s'),
         '[<n>] shift find <letter>': Key('%(n)d,F,%(letter)s'),
-        'find [<n>] <letter>': Key('%(n)d,f,%(letter)s'),
-        'shift find [<n>] <letter>': Key('%(n)d,F,%(letter)s'),
 
         '[<n>] before <letter>': Key('%(n)d,t,%(letter)s'),
         '[<n>] shift before <letter>': Key('%(n)d,T,%(letter)s'),
-        'before [<n>] <letter>': Key('%(n)d,t,%(letter)s'),
-        'shift before [<n>] <letter>': Key('%(n)d,T,%(letter)s'),
 
         '[<n>] again': Text('%(n)d;'),
         '[<n>] shift again': Text('%(n)d,'),
@@ -284,7 +280,8 @@ gvim_navigation_rule = MappingRule(
         "cursor middle": Key("s-m"),
         "cursor (low | bottom)": Key("s-l"),
 
-        "go <line>": Key("colon") + Text("%(line)d\n"),
+        "go <line>": Text("%(line)dgg"),
+        "go <n> percent": Text("%(n)d%%"),
 
         "search <text>": Key("slash") + Text("%(text)s\n"),
         "search this": Key("asterisk"),
@@ -293,7 +290,7 @@ gvim_navigation_rule = MappingRule(
     },
     extras=[
         Dictation("text"),
-        IntegerRef("n", 1, 50),
+        IntegerRef("n", 1, 101),
         ShortIntegerRef("line", 1, 10000)
     ]
 )
