@@ -545,20 +545,27 @@ EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, insert_mode_grammar, ex
                    ex_mode_bootstrap_grammar, insert_mode_bootstrap_grammar]
 
 
-# Unload function which will be called at unload time.
 def unload():
+    global pycharm_grammar
+    if pycharm_grammar: pycharm_grammar.unload()
+    pycharm_grammar = None
+
     global normal_mode_grammar
     if normal_mode_grammar: normal_mode_grammar.unload()
     normal_mode_grammar = None
-
-    global ex_mode_grammar
-    if ex_mode_grammar: ex_mode_grammar.unload()
-    ex_mode_grammar = None
 
     global insert_mode_grammar
     if insert_mode_grammar: insert_mode_grammar.unload()
     insert_mode_grammar = None
 
-    global pycharm_grammar
-    if pycharm_grammar: pycharm_grammar.unload()
-    pycharm_grammar = None
+    global ex_mode_grammar
+    if ex_mode_grammar: ex_mode_grammar.unload()
+    ex_mode_grammar = None
+
+    global ex_mode_bootstrap_grammar
+    if ex_mode_bootstrap_grammar: ex_mode_bootstrap_grammar.unload()
+    ex_mode_bootstrap_grammar = None
+
+    global insert_mode_bootstrap_grammar
+    if insert_mode_bootstrap_grammar: insert_mode_bootstrap_grammar.unload()
+    insert_mode_bootstrap_grammar = None
