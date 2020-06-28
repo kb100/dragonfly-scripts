@@ -3,6 +3,39 @@ from common import executeSelect, LetterRef, LetterSequenceRef, release
 from lib.format import FormatRule
 from python_rules import PythonRules
 
+gvim_exec_context = AppContext(executable="gvim")
+pycharm_exec_context = AppContext(executable="pycharm")
+vim_putty_context = AppContext(title="vim")
+gvim_context = (gvim_exec_context | vim_putty_context | pycharm_exec_context)
+
+ex_mode_grammar = Grammar("ExMode", context=gvim_context)
+normal_mode_grammar = Grammar("NormalMode", context=gvim_context)
+insert_mode_grammar = Grammar("InsertMode", context=gvim_context)
+pycharm_grammar = Grammar('pycharm global', context=gvim_context)
+
+EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, insert_mode_grammar, ex_mode_grammar]
+
+
+class GrammarSwitcher:
+    def __init__(self, grammars=None):
+        self.grammars = grammars if grammars is not None else []
+
+    def switch_to(self, grammar):
+        for other in self.grammars:
+            if other is grammar:
+                grammar.enable()
+            else:
+                other.disable()
+
+    def add_grammar(self, grammar):
+        self.grammars.append(grammar)
+
+    def switch_to_action(self, grammar):
+        return Function(self.switch_to, grammar=grammar)
+
+
+grammar_switcher = GrammarSwitcher([normal_mode_grammar, insert_mode_grammar, ex_mode_grammar])
+
 
 def mark(s):
     return Key('m,' + s)
@@ -18,6 +51,11 @@ def goToLine(s):
 
 def pyCharmAction(s):
     return Key("cs-a/10") + Text(s) + Pause("50") + Key("enter")
+
+
+class EmptyAction(ActionBase):
+    def execute(self, data=None):
+        pass
 
 
 class PycharmGlobalRule(MappingRule):
@@ -59,6 +97,8 @@ class PycharmGlobalRule(MappingRule):
         'compare previous file': Key('a-left'),
         'menu <letter>': Key('a-%(letter)s'),
         'hide menu': Key('s-escape'),
+        'fold': Key('c-minus'),
+        '(expand|unfold)': Key('c-plus'),
     }
     extras = [
         IntegerRef('n', 1, 10),
@@ -71,6 +111,7 @@ class NormalModeKeystrokeRule(MappingRule):
     # exported = False
 
     mapping = {
+        "kay": Key("escape"),
         "slap": Key('enter'),
         "[<n>] up": Text("%(n)dk"),
         "[<n>] down": Text("%(n)dj"),
@@ -209,8 +250,31 @@ class NormalModeKeystrokeRule(MappingRule):
         'stop recording': Key('q'),
         'play macro': Key('at,a'),
 
-        "kay": Key("escape"),
+        "window left": Key("c-w,h"),
+        "window right": Key("c-w,l"),
+        "window up": Key("c-w,k"),
+        "window down": Key("c-w,j"),
 
+        "window split": Key("c-w,s"),
+        "window vertical split": Key("c-w,v"),
+
+        "tap (next|right)": Key("g,t"),
+        "tap (previous|left)": Key("g,T"),
+
+        "go first line": Key("g,g"),
+        "go last line": Key("G"),
+        "go old": Key("c-o"),
+
+        "cursor top": Key("s-h"),
+        "cursor middle": Key("s-m"),
+        "cursor (low | bottom)": Key("s-l"),
+
+        "go <ln>": Text("%(ln)dgg"),
+        "go <n> percent": Text("%(n)d%%"),
+
+        "search <text>": Key("slash/10") + Text("%(text)s\n"),
+        "search this": Key("asterisk"),
+        "shift search <text>": Key("question/10") + Text("%(text)s\n"),
     }
     extras = [
         Dictation("text"),
@@ -223,146 +287,26 @@ class NormalModeKeystrokeRule(MappingRule):
 
 
 normal_mode_sequence = Repetition(RuleRef(rule=NormalModeKeystrokeRule()),
-                                  min=1, max=16, name="normal_mode_sequence")
+                                  min=1, max=7, name="normal_mode_sequence")
 
 
 class NormalModeRepeatRule(CompoundRule):
-    spec = "<normal_mode_sequence> [[[and] repeat [that]] <n> times]"
+    spec = "<normal_mode_sequence> [<n> times]"
     extras = [normal_mode_sequence, IntegerRef("n", 1, 100), ]
     defaults = {"n": 1, }
 
-    def _process_recognition(self, node, extras):
-        normal_mode_sequence = extras["normal_mode_sequence"]
-        count = extras["n"]
-        for i in range(count):
-            for action in normal_mode_sequence:
-                action.execute()
-        release.execute()
+    def value(self, node):
+        seq = node.get_child_by_name('normal_mode_sequence', shallow=True).value()
+        n_node = node.get_child_by_name('n', shallow=True)
+        n = n_node.value() if n_node is not None else self.defaults['n']
+        return sum(seq * n, EmptyAction()) + release
 
 
-gvim_window_rule = MappingRule(
-    name="gvim_window",
-    mapping={
-        "window left": Key("c-w,h"),
-        "window right": Key("c-w,l"),
-        "window up": Key("c-w,k"),
-        "window down": Key("c-w,j"),
-
-        "window split": Key("c-w,s"),
-        "window vertical split": Key("c-w,v"),
-    },
-    extras=[]
-)
-
-gvim_tabulator_rule = MappingRule(
-    name="gvim_tabulators",
-    mapping={
-        "tap (next|right)": Key("g,t"),
-        "tap (previous|left)": Key("g,T"),
-    },
-    extras=[]
-)
-
-gvim_general_rule = MappingRule(
-    name="gvim_general",
-    mapping={"cancel": Key("escape,u"), },
-    extras=[]
-)
-
-gvim_navigation_rule = MappingRule(
-    name="gvim_navigation",
-    mapping={
-        "go first line": Key("g,g"),
-        "go last line": Key("G"),
-        "go old": Key("c-o"),
-
-        "cursor top": Key("s-h"),
-        "cursor middle": Key("s-m"),
-        "cursor (low | bottom)": Key("s-l"),
-
-        "go <line>": Text("%(line)dgg"),
-        "go <n> percent": Text("%(n)d%%"),
-
-        "search <text>": Key("slash") + Text("%(text)s\n"),
-        "search this": Key("asterisk"),
-        "shift search <text>": Key("question") + Text("%(text)s\n"),
-
-    },
-    extras=[
-        Dictation("text"),
-        IntegerRef("n", 1, 101),
-        ShortIntegerRef("line", 1, 10000)
-    ]
-)
-
-
-class ExModeEnabler(CompoundRule):
-    spec = "execute"
-
-    def _process_recognition(self, node, extras):
-        ex_mode_bootstrap_grammar.disable()
-        normal_mode_grammar.disable()
-        ex_mode_grammar.enable()
-        Key("colon").execute()
-
-
-class ExModeDisabler(CompoundRule):
-    spec = "<command>"
-    extras = [Choice("command", {
-        "kay": "okay",
-        "cancel": "cancel",
-    })]
-
-    def _process_recognition(self, node, extras):
-        ex_mode_grammar.disable()
-        ex_mode_bootstrap_grammar.enable()
-        normal_mode_grammar.enable()
-        if extras["command"] == "cancel":
-            Key("escape").execute()
-        else:
-            Key("enter").execute()
-
-
-class ExModeCommands(MappingRule):
-    mapping = {
-        "read": Text("r "),
-        "(write|save) file": Text("w "),
-        "quit": Text("q "),
-        "write and quit": Text("wq "),
-        "edit": Text("e "),
-        "tab edit": Text("tabe "),
-
-        "set number": Text("set number "),
-        "set relative number": Text("set relativenumber "),
-        "set ignore case": Text("set ignorecase "),
-        "set no ignore case": Text("set noignorecase "),
-        "set file format UNIX": Text("set fileformat=unix "),
-        "set file format DOS": Text("set fileformat=dos "),
-        "set file type Python": Text("set filetype=python"),
-        "set file type tex": Text("set filetype=tex"),
-
-        "P. W. D.": Text("pwd "),
-
-        "help": Text("help"),
-        "substitute": Text("s/"),
-        "up": Key("up"),
-        "down": Key("down"),
-        "[<n>] left": Key("left:%(n)d"),
-        "[<n>] right": Key("right:%(n)d"),
-    }
-    extras = [
-        Dictation("text"),
-        IntegerRef("n", 1, 50),
-    ]
-    defaults = {"n": 1, }
-
-
-class InsertModeEnabler(CompoundRule):
+class NormalModeToInsertModeRule(CompoundRule):
     spec = "<command>"
     extras = [Choice("command", {
         "insert": "i",
         "(shift|big) insert": "I",
-
         "change": "c",
         "change (big|upper) (word|whiskey)": "c,W",
         "change (big|upper) inner (word|whiskey)": "c,i,W",
@@ -374,47 +318,56 @@ class InsertModeEnabler(CompoundRule):
         "change a double quote": 'c,a,dquote',
         "change inner double quote": "c,i,dquote",
         "change a quote": 'c,a,quote',
-        "change inner quote": "c,i,quote",
+        "change inner quote": "c,i,squote",
         "change a (paren|parenthesis|raip|laip)": "c,a,rparen",
         "change inner (paren|parenthesis|raip|laip)": "c,i,rparen",
         "shift change": "C",
-        "change letter": "s",
-
+        "change (char|letter)": "s",
         "(sub|change) line": "S",
-
         "(after | append)": "a",
         "(shift|big) (after | append)": "A",
-
         "open": "o",
         "(shift|big) open": "O",
     })]
 
+    def value(self, node):
+        command = node.get_child_by_name('command', shallow=True).value()
+        return Key(command) + grammar_switcher.switch_to_action(insert_mode_grammar)
+
+
+class NormalModeToExModeRule(CompoundRule):
+    spec = "execute"
+
+    def value(self, node):
+        return Key('colon') + grammar_switcher.switch_to_action(ex_mode_grammar)
+
+
+class NormalModeRule(CompoundRule):
+    spec = '(<normal_repeat_command> [<transition_command>]|<transition_command>)'
+    extras = [
+        RuleRef(NormalModeRepeatRule(), name='normal_repeat_command'),
+        Alternative([
+            RuleRef(NormalModeToInsertModeRule()),
+            RuleRef(NormalModeToExModeRule()),
+        ], name='transition_command')]
+
     def _process_recognition(self, node, extras):
-        insert_mode_bootstrap_grammar.disable()
-        normal_mode_grammar.disable()
-        insert_mode_grammar.enable()
-        for string in extras["command"].split(','):
-            key = Key(string)
-            key.execute()
+        extras.get('normal_repeat_command', EmptyAction()).execute()
+        extras.get('transition_command', EmptyAction()).execute()
 
 
-class InsertModeDisabler(CompoundRule):
+class InsertModeToNormalModeRule(CompoundRule):
     spec = "<command>"
     extras = [Choice("command", {
-        "kay": "okay",
-        "cancel": "cancel",
+        "kay": Key('escape'),
+        "cancel": Key('escape,u'),
     })]
 
-    def _process_recognition(self, node, extras):
-        insert_mode_grammar.disable()
-        insert_mode_bootstrap_grammar.enable()
-        normal_mode_grammar.enable()
-        Key("escape").execute()
-        if extras["command"] == "cancel":
-            Key("u").execute()
+    def value(self, node):
+        command = node.get_child_by_name('command', shallow=True).value()
+        return command + grammar_switcher.switch_to_action(normal_mode_grammar)
 
 
-# handles InsertMode control structures
 class InsertModeCommands(MappingRule):
     mapping = {
         # "<text>": Text("%(text)s"),
@@ -447,7 +400,7 @@ class InsertModeCommands(MappingRule):
         '[<n>] after <letter>': Key('escape/10,%(n)d,f,%(letter)s,a'),
         '[<n>] shift after <letter>': Key('escape/10,%(n)d,F,%(letter)s,a'),
         '[<n>] before <letter>': Key('escape/10,%(n)d,f,%(letter)s,i'),
-        '[<n>] shift before <letter>': Key('%(n)d,F,%(letter)s,i'),
+        '[<n>] shift before <letter>': Key('escape/10,%(n)d,F,%(letter)s,i'),
         # snippets for snipmate
 
         "comp list": Text("compl\t"),
@@ -491,60 +444,87 @@ insert_mode_sequence = Repetition(insert_mode_single_action,
 
 
 class InsertModeRepeatRule(CompoundRule):
-    spec = "<insert_mode_sequence> [[[and] repeat [that]] <n> times]"
+    spec = "<insert_mode_sequence> [<n> times]"
     extras = [insert_mode_sequence, IntegerRef("n", 1, 100), ]
     defaults = {"n": 1, }
 
+    def value(self, node):
+        seq = node.get_child_by_name('insert_mode_sequence', shallow=True).value()
+        n_node = node.get_child_by_name('n', shallow=True)
+        n = n_node.value() if n_node is not None else self.defaults['n']
+        return sum(seq * n, EmptyAction()) + release
+
+
+class InsertModeRule(CompoundRule):
+    spec = '<alternative>'
+    extras = [Alternative([RuleRef(InsertModeRepeatRule()), RuleRef(InsertModeToNormalModeRule())], name='alternative')]
+
     def _process_recognition(self, node, extras):
-        insert_mode_sequence = extras["insert_mode_sequence"]
-        count = extras["n"]
-        for i in range(count):
-            for action in insert_mode_sequence:
-                action.execute()
-        release.execute()
+        extras['alternative'].execute()
 
 
-gvim_exec_context = AppContext(executable="gvim")
-pycharm_exec_context = AppContext(executable="pycharm")
-# set the window title to vim in the putty session for the following context to
-# work.
-vim_putty_context = AppContext(title="vim")
-gvim_context = (gvim_exec_context | vim_putty_context | pycharm_exec_context)
+class ExModeToNormalModeRule(CompoundRule):
+    spec = "<command>"
+    extras = [Choice("command", {
+        "kay": Key('escape'),
+        "cancel": Key('escape'),
+    })]
 
-# set up the grammar for vim's ex mode
-ex_mode_bootstrap_grammar = Grammar("ExMode bootstrap", context=gvim_context)
-ex_mode_bootstrap_grammar.add_rule(ExModeEnabler())
-ex_mode_bootstrap_grammar.load()
-ex_mode_grammar = Grammar("ExMode", context=gvim_context)
-ex_mode_grammar.add_rule(ExModeCommands())
-ex_mode_grammar.add_rule(ExModeDisabler())
-ex_mode_grammar.load()
-ex_mode_grammar.disable()
+    def value(self, node):
+        command = node.get_child_by_name('command', shallow=True).value()
+        return command + grammar_switcher.switch_to_action(normal_mode_grammar)
 
-# set up the grammar for vim's insert mode
-insert_mode_bootstrap_grammar = Grammar("InsertMode bootstrap", context=gvim_context)
-insert_mode_bootstrap_grammar.add_rule(InsertModeEnabler())
-insert_mode_bootstrap_grammar.load()
-insert_mode_grammar = Grammar("InsertMode", context=gvim_context)
-insert_mode_grammar.add_rule(InsertModeRepeatRule())
-insert_mode_grammar.add_rule(InsertModeDisabler())
-insert_mode_grammar.load()
-insert_mode_grammar.disable()
 
-normal_mode_grammar = Grammar("NormalMode", context=gvim_context)
-normal_mode_grammar.add_rule(NormalModeRepeatRule())
-normal_mode_grammar.add_rule(gvim_window_rule)
-normal_mode_grammar.add_rule(gvim_tabulator_rule)
-normal_mode_grammar.add_rule(gvim_general_rule)
-normal_mode_grammar.add_rule(gvim_navigation_rule)
-normal_mode_grammar.load()
+class ExModeCommands(MappingRule):
+    mapping = {
+        "read": Text("r "),
+        "(write|save) file": Text("w "),
+        "quit": Text("q "),
+        "write and quit": Text("wq "),
+        "edit": Text("e "),
+        "tab edit": Text("tabe "),
 
-pycharm_grammar = Grammar('pycharm global', context=gvim_context)
+        "set number": Text("set number "),
+        "set relative number": Text("set relativenumber "),
+        "set ignore case": Text("set ignorecase "),
+        "set no ignore case": Text("set noignorecase "),
+        "set file format UNIX": Text("set fileformat=unix "),
+        "set file format DOS": Text("set fileformat=dos "),
+        "set file type Python": Text("set filetype=python"),
+        "set file type tex": Text("set filetype=tex"),
+
+        "P. W. D.": Text("pwd "),
+
+        "help": Text("help"),
+        "substitute": Text("s/"),
+        "up": Key("up"),
+        "down": Key("down"),
+        "[<n>] left": Key("left:%(n)d"),
+        "[<n>] right": Key("right:%(n)d"),
+    }
+    extras = [
+        Dictation("text"),
+        IntegerRef("n", 1, 50),
+    ]
+    defaults = {"n": 1, }
+
+
+class ExModeRule(CompoundRule):
+    spec = '<alternative>'
+    extras = [Alternative([RuleRef(ExModeCommands()), RuleRef(ExModeToNormalModeRule())], name='alternative')]
+
+    def _process_recognition(self, node, extras):
+        extras['alternative'].execute()
+
+
+normal_mode_grammar.add_rule(NormalModeRule())
+insert_mode_grammar.add_rule(InsertModeRule())
+ex_mode_grammar.add_rule(ExModeRule())
 pycharm_grammar.add_rule(PycharmGlobalRule())
-pycharm_grammar.load()
 
-EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, insert_mode_grammar, ex_mode_grammar,
-                   ex_mode_bootstrap_grammar, insert_mode_bootstrap_grammar]
+for grammar in EXPORT_GRAMMARS:
+    grammar.load()
+grammar_switcher.switch_to(normal_mode_grammar)
 
 
 def unload():
@@ -563,11 +543,3 @@ def unload():
     global ex_mode_grammar
     if ex_mode_grammar: ex_mode_grammar.unload()
     ex_mode_grammar = None
-
-    global ex_mode_bootstrap_grammar
-    if ex_mode_bootstrap_grammar: ex_mode_bootstrap_grammar.unload()
-    ex_mode_bootstrap_grammar = None
-
-    global insert_mode_bootstrap_grammar
-    if insert_mode_bootstrap_grammar: insert_mode_bootstrap_grammar.unload()
-    insert_mode_bootstrap_grammar = None
