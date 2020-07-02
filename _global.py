@@ -1,17 +1,12 @@
 from dragonfly import *
 from lib.format import FormatRule
 from lib.common import SpellLetterSequenceRule
+import natlink
 
 
 def reload_natlink():
-    """Reloads Natlink and custom Python modules."""
-    win = Window.get_foreground()
-    FocusWindow(executable="natspeak",
-                title="Messages from Python Macros").execute()
-    Pause("10").execute()
-    Key("a-f, r").execute()
-    Pause("10").execute()
-    win.set_foreground()
+    natlink.setMicState('off')
+    natlink.setMicState('on')
 
 
 class GlobalRule(MappingRule):
@@ -29,8 +24,7 @@ class GlobalRule(MappingRule):
         "drop": Mouse("left:up"),
         "[<n>] alt tab": Key("alt:down,tab/50:%(n)d/50,alt:up"),
         "alt tab show": Key("alt:down,tab/10,s-tab"),
-        # 'reload natlink': Function(reload_natlink),
-        # crashes
+        'reload natlink': Function(reload_natlink),
     }
     extras = [IntegerRef('n', 1, 101)]
     defaults = {'n': 1}
@@ -41,6 +35,7 @@ global_grammar.add_rule(GlobalRule())
 global_grammar.add_rule(FormatRule())
 global_grammar.add_rule(SpellLetterSequenceRule())
 global_grammar.load()
+
 
 def unload():
     global global_grammar
