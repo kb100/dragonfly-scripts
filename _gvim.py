@@ -374,16 +374,19 @@ class NormalModeKeystrokeRule(MappingRule):
         "window split": Key("c-w,s"),
         "window vertical split": Key("c-w,v"),
 
-        "[<n>] table (next|right)": Key("g,t")*Repeat('n'),
-        "[<n>] table (previous|left)": Key("g,T")*Repeat('n'),
+        "[<n>] table (next|right)": Key("g,t") * Repeat('n'),
+        "[<n>] table (previous|left)": Key("g,T") * Repeat('n'),
 
         "cursor top": Key("s-h"),
         "cursor middle": Key("s-m"),
         "cursor (low | bottom)": Key("s-l"),
 
         "search <text>": Key("slash/10") + Text("%(text)s\n"),
-        "search this": Key("asterisk"),
         "shift search <text>": Key("question/10") + Text("%(text)s\n"),
+        "search this": Key("asterisk"),
+
+        '[<n>] swap up': Text('%(n)d') + Key('d,d,up,P'),
+        '[<n>] swap down': Text('%(n)d') + Key('d,d,p'),
     }
     extras = [
         Dictation("text"),
@@ -539,6 +542,7 @@ class VisualModeKeystrokeRule(MappingRule):
         "search <text>": Key("slash/10") + Text("%(text)s\n"),
         "search this": Key("asterisk"),
         "shift search <text>": Key("question/10") + Text("%(text)s\n"),
+        #todo reselect
     }
     extras = [
         Dictation("text"),
