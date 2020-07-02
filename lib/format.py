@@ -59,6 +59,12 @@ def format_camel(dictation):
     words = text.split(" ")
     return words[0] + "".join(w.capitalize() for w in words[1:])
 
+# Format: some words
+def format_say(dictation):
+    """ say <dictation> """
+    text = str(dictation)
+    return text
+
 
 def FormatAction(function):
     def wrap_function(function):

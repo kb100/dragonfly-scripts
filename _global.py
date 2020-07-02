@@ -1,4 +1,6 @@
 from dragonfly import *
+from lib.format import FormatRule
+from lib.common import SpellLetterSequenceRule
 
 
 def reload_natlink():
@@ -36,6 +38,8 @@ class GlobalRule(MappingRule):
 
 global_grammar = Grammar('global grammar')
 global_grammar.add_rule(GlobalRule())
+global_grammar.add_rule(FormatRule())
+global_grammar.add_rule(SpellLetterSequenceRule())
 global_grammar.load()
 
 

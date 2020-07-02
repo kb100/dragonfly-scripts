@@ -1,5 +1,5 @@
 from dragonfly import *
-from common import LetterSequenceRef, release, executeSelect
+from lib.common import LetterSequenceRef, release, executeSelect
 
 
 rules = MappingRule(

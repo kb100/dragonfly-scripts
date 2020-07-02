@@ -99,7 +99,7 @@ def LetterRef(name):
     return Choice(name, singleCharacterKeyMap)
 
 
-class LetterSequence(CompoundRule):
+class LetterSequenceRule(CompoundRule):
     spec = '<letter_sequence>'
     extras = [Repetition(LetterRef('letter'), min=1, max=32, name='letter_sequence')]
 
@@ -109,7 +109,11 @@ class LetterSequence(CompoundRule):
 
 
 def LetterSequenceRef(name):
-    return RuleRef(LetterSequence(), name)
+    return RuleRef(LetterSequenceRule(), name)
+
+class SpellLetterSequenceRule(MappingRule):
+    mapping = {"spell <letter_sequence>": Key("%(letter_sequence)s")}
+    extras = [LetterSequenceRef("letter_sequence")]
 
 
 noSpaceNoCaps = Mimic("\\no-caps-on") + Mimic("\\no-space-on")
@@ -121,3 +125,8 @@ def executeSelect(n, offset=1):
         Key("down/25:" + str(n) + '/25,enter').execute()
     else:
         Key('enter').execute()
+
+
+class EmptyAction(ActionBase):
+    def execute(self, data=None):
+        pass
