@@ -42,8 +42,6 @@ global_grammar.add_rule(FormatRule())
 global_grammar.add_rule(SpellLetterSequenceRule())
 global_grammar.load()
 
-
-# Unload function which will be called at unload time.
 def unload():
     global global_grammar
     if global_grammar: global_grammar.unload()

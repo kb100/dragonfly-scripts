@@ -213,6 +213,8 @@ class PycharmGlobalRule(MappingRule):
         '(show|peek) docs': Key('c-q'),
         '(show params|param info)': Key('c-p'),
         'show type': Key('cs-p'),
+        'show type hierarchy': Key('c-h'),
+        'show call hierarchy': Key('ca-h'),
         "reformat": Key('ca-l'),
         "reformat line": Key('escape,V,ca-l,escape'),
         'comment': Key('c-slash'),
@@ -238,6 +240,7 @@ class PycharmGlobalRule(MappingRule):
         'git commit': Key('c-k'),
         'show diff': Key('c-d'),
         'next diff': Key('f7'),
+        'next section': Key('tab'),
         'previous diff': Key('s-f7'),
         'compare next file': Key('a-right'),
         'compare previous file': Key('a-left'),
@@ -245,6 +248,7 @@ class PycharmGlobalRule(MappingRule):
         'hide menu': Key('s-escape'),
         'fold': Key('c-npsub'),
         '(expand|unfold)': Key('c-npadd'),
+        'open file': Key('a-n/10,f'),
     }
     extras = [
         IntegerRef('n', 1, 10),
@@ -370,8 +374,8 @@ class NormalModeKeystrokeRule(MappingRule):
         "window split": Key("c-w,s"),
         "window vertical split": Key("c-w,v"),
 
-        "tap (next|right)": Key("g,t"),
-        "tap (previous|left)": Key("g,T"),
+        "[<n>] table (next|right)": Key("g,t")*Repeat('n'),
+        "[<n>] table (previous|left)": Key("g,T")*Repeat('n'),
 
         "cursor top": Key("s-h"),
         "cursor middle": Key("s-m"),
@@ -442,6 +446,9 @@ class NormalModeToVisualModeRule(MappingRule):
 class NormalModeToExModeRule(MappingRule):
     mapping = {
         'execute': Key('colon'),
+        '(sub|substitute)': Key('colon,s,slash'),
+        'search': Key('slash'),
+        '(big|shift) search': Key('question'),
     }
 
 
