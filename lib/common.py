@@ -57,7 +57,7 @@ specialCharacterKeyMap = {
     'at': 'at',
     'backslash': 'backslash',
     'backtick': 'backtick',
-    'bar|pipe': 'bar',
+    '(bar|pipe)': 'bar',
     'caret': 'caret',
     'colon': 'colon',
     'comma': 'comma',
@@ -77,7 +77,7 @@ specialCharacterKeyMap = {
     'slash': 'slash',
     '[single] quote': 'squote',
     'tilde': 'tilde',
-    'underscore | score': 'underscore',
+    '(underscore | score)': 'underscore',
     'langle': 'langle',
     'lace': 'lbrace',
     'lack': 'lbracket',
@@ -95,21 +95,19 @@ singleCharacterKeyMap.update(digitsKeyMap)
 singleCharacterKeyMap.update(specialCharacterKeyMap)
 
 
-def LetterRef(name):
+def LetterRef(name=None):
     return Choice(name, singleCharacterKeyMap)
 
 
-class LetterSequenceRule(CompoundRule):
-    spec = '<letter_sequence>'
-    extras = [Repetition(LetterRef('letter'), min=1, max=32, name='letter_sequence')]
+class LetterSequenceRef(Modifier):
+    def __init__(self, name):
+        element = Repetition(LetterRef(), min=1, max=32, name=name)
 
-    def value(self, node):
-        seq = node.get_child_by_name('letter_sequence')
-        return ','.join(seq.value())
+        def modifier(v):
+            return ','.join(v)
 
+        super(LetterSequenceRef, self).__init__(element, modifier)
 
-def LetterSequenceRef(name):
-    return RuleRef(LetterSequenceRule(), name)
 
 class SpellLetterSequenceRule(MappingRule):
     mapping = {"spell <letters>": Key("%(letters)s")}
