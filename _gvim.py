@@ -387,25 +387,25 @@ class NormalModeKeystrokeRule(MappingRule):
         "shift search <text>": Key("question/10") + Text("%(text)s\n"),
         "search this": Key("asterisk"),
 
-        '[<n>] swap up': Text('%(n)d') + Key('d,d,up,P'),
-        '[<n>] swap down': Text('%(n)d') + Key('d,d,p'),
+        '[<n>] swap up [<m> lines]': Text('%(n)d') + Key('d,d') + Text('%(m)d') + Key('k,P'),
+        '[<n>] swap down [<m> lines]': Text('%(n)d') + Key('d,d') + Text('%(m)d') + Key('j,P'),
     }
     extras = [
         Dictation("text"),
-        IntegerRef("n", 1, 101),
-        ShortIntegerRef("ln", 1, 10000),
-        ShortIntegerRef("lm", 1, 10000),
+        IntegerRef("n", 1, 101, default=1),
+        IntegerRef('m', 1, 101, default=1),
+        ShortIntegerRef("ln", 1, 10000, default=1),
+        ShortIntegerRef("lm", 1, 10000, default=1),
         LetterRef('letter'),
         Choice('no_count_motion', no_count_motion_keys),
         Choice('optional_count_motion', optional_count_motion_keys),
         Choice('mandatory_count_motion', mandatory_count_motion_keys),
         Choice('text_object_selection', text_object_keys),
         FindMotionRef('find_motion'),
-        Choice('register', register_keys),
+        Choice('register', register_keys, default='dquote'),
         Choice('paired_symbol', paired_symbol_keys),
         Choice('paired_symbols', paired_symbols_keys),
     ]
-    defaults = {"n": 1, "ln": 1, "lm": 1, "register": "dquote"}
 
 
 @grammar_switcher.switches_to(insert_mode_grammar)
