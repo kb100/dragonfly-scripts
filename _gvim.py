@@ -243,6 +243,7 @@ class PycharmGlobalRule(MappingRule):
         'show diff': Key('c-d'),
         'next diff': Key('f7'),
         'next section': Key('tab'),
+        'previous section': Key('s-tab'),
         'previous diff': Key('s-f7'),
         'compare next file': Key('a-right'),
         'compare previous file': Key('a-left'),
