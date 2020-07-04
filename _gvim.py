@@ -286,8 +286,7 @@ class NormalModeKeystrokeRule(MappingRule):
             Text('%(n)d') + Key('dquote,%(register)s,d,%(text_object_selection)s'),
         '[<n>] Dell <find_motion> [register <register>]':
             Text('%(n)d') + Key('dquote,%(register)s,d,%(find_motion)s'),
-        # "[<n>] backspace": Key("backspace:%(n)d"),
-        #  (a + (b + c))
+
         "[<n>] Pete macro": Key("at,at:%(n)d"),
 
         "[<n>] join": Key("J:%(n)d"),
@@ -335,9 +334,7 @@ class NormalModeKeystrokeRule(MappingRule):
         '<ln> thru <lm> comment': mark('z') + goToLine('lm') + mark('y') +
                                   goToLine('ln') + Text('V') + jumpMark('y') +
                                   Key('c-slash') + Key('escape') + jumpMark('z'),
-        '<ln> thru <lm> (copy|yank)': mark('z') + goToLine('lm') + mark('y') +
-                                      goToLine('ln') + Text('V') + jumpMark('y') +
-                                      Key('y') + jumpMark('z'),
+        '<ln> thru <lm> (copy|yank)': Key('colon/10') + Text("%(ln)d,%(lm)dy\n"),
 
         # Pete is shorthand for repeat
         "[<n>] Pete": Key("dot:%(n)d"),
