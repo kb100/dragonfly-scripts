@@ -237,6 +237,8 @@ class PycharmGlobalRule(MappingRule):
         'panel <n>': Key('a-%(n)d'),
         'close tab': Key('c-f4'),
         'close (all but this|others)': pyCharmAction('close others'),
+        'close left': pyCharmAction('close all to the left'),
+        'close right': pyCharmAction('close all to the right'),
         'git commit': Key('c-k'),
         'show diff': Key('c-d'),
         'next diff': Key('f7'),
@@ -374,8 +376,8 @@ class NormalModeKeystrokeRule(MappingRule):
         "window split": Key("c-w,s"),
         "window vertical split": Key("c-w,v"),
 
-        "[<n>] table (next|right)": Key("g,t") * Repeat('n'),
-        "[<n>] table (previous|left)": Key("g,T") * Repeat('n'),
+        "[<n>] table (next|right)": Key("g,t/10") * Repeat('n'),
+        "[<n>] table (previous|left)": Key("g,T/10") * Repeat('n'),
 
         "cursor top": Key("s-h"),
         "cursor middle": Key("s-m"),
