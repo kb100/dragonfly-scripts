@@ -89,13 +89,15 @@ dynamic_module_names = ["_chrome", "_gvim"]
 dynamic_modules = {name: importlib.import_module(name) for name in dynamic_module_names}
 dynamic_module_grammars = {name: dynamic_modules[name].EXPORT_GRAMMARS for name in dynamic_module_names}
 citrix_context = AppContext(executable='notepad')
+nomachine_context = AppContext(executable='nxplayer')
+focus_context = citrix_context | nomachine_context
 
 for name, grammars in dynamic_module_grammars.iteritems():
     for grammar in grammars:
-        grammar._context = DynamicContext(fallback=grammar._context, focus_context=citrix_context)
+        grammar._context = DynamicContext(fallback=grammar._context, focus_context=focus_context)
 
 manager = DynamicGrammarStateManager(dynamic_module_grammars, dynamic_modules,
-                                     DynamicContext(fallback=None, focus_context=citrix_context))
+                                     DynamicContext(fallback=None, focus_context=focus_context))
 manager.register()
 
 spoken_modules = {"chrome": "_chrome", "(pycharm|gvim)": "_gvim"}
