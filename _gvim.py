@@ -442,6 +442,7 @@ class NormalModeToVisualModeRule(MappingRule):
         "visual": Key("v"),
         "visual line": Key("s-v"),
         "visual block": Key("c-v"),
+        'reselect': Key('g,v'),
     }
 
 
@@ -542,7 +543,7 @@ class VisualModeKeystrokeRule(MappingRule):
         "search <text>": Key("slash/10") + Text("%(text)s\n"),
         "search this": Key("asterisk"),
         "shift search <text>": Key("question/10") + Text("%(text)s\n"),
-        #todo reselect
+
     }
     extras = [
         Dictation("text"),

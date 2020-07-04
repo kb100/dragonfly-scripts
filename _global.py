@@ -1,16 +1,24 @@
 from dragonfly import *
 from lib.format import FormatRule
 from lib.common import SpellLetterSequenceRule
+from lib.sound import play, SND_DING, SND_DEACTIVATE
 import natlink
 
 
 def reload_natlink():
     natlink.setMicState('off')
     natlink.setMicState('on')
+    play(SND_DING)
+
+
+def go_to_sleep():
+    natlink.setMicState('sleeping')
+    play(SND_DEACTIVATE)
 
 
 class GlobalRule(MappingRule):
     mapping = {
+        '[<text>] go to sleep': Function(go_to_sleep),
         'mouse': Key('f3,f4/350,f4'),
         "touch": Mouse("left"),
         "touch two": Mouse("left:2"),
@@ -26,7 +34,10 @@ class GlobalRule(MappingRule):
         "alt tab show": Key("alt:down,tab/10,s-tab"),
         'reload natlink': Function(reload_natlink),
     }
-    extras = [IntegerRef('n', 1, 101)]
+    extras = [
+        IntegerRef('n', 1, 101),
+        Dictation('text'),
+    ]
     defaults = {'n': 1}
 
 

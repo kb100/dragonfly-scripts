@@ -112,8 +112,8 @@ def LetterSequenceRef(name):
     return RuleRef(LetterSequenceRule(), name)
 
 class SpellLetterSequenceRule(MappingRule):
-    mapping = {"spell <letter_sequence>": Key("%(letter_sequence)s")}
-    extras = [LetterSequenceRef("letter_sequence")]
+    mapping = {"spell <letters>": Key("%(letters)s")}
+    extras = [LetterSequenceRef("letters")]
 
 
 noSpaceNoCaps = Mimic("\\no-caps-on") + Mimic("\\no-space-on")
