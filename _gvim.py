@@ -443,6 +443,7 @@ class NormalModeToVisualModeRule(MappingRule):
         "visual line": Key("s-v"),
         "visual block": Key("c-v"),
         'reselect': Key('g,v'),
+        'select all': Key('g,g,V,G'),
     }
 
 
