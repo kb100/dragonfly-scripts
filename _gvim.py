@@ -199,7 +199,7 @@ class RepeatActionRule(CompoundRule):
         seq = node.get_child_by_name('sequence', shallow=True).value()
         n_node = node.get_child_by_name('n', shallow=True)
         n = n_node.value() if n_node is not None else self.defaults['n']
-        return sum(seq * n, EmptyAction()) + release
+        return sum(seq * n, EmptyAction())
 
 
 class PycharmGlobalRule(MappingRule):
