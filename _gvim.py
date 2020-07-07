@@ -269,9 +269,9 @@ class NormalModeKeystrokeRule(MappingRule):
         '[<n>] <optional_count_motion>': Text('%(n)d') + Key('%(optional_count_motion)s'),
         '<no_count_motion>': Key('%(no_count_motion)s'),
         '<ln> <mandatory_count_motion>': Text('%(ln)d') + Key('%(mandatory_count_motion)s'),
-        '<text_object_selection>': Key('%(text_object_selection)s'),
         '[<n>] <find_motion>': Text('%(n)d') + Key('%(find_motion)s'),
 
+        #todo lower,upper operators need motions
         "lower case": Key("g,u"),
         "upper case": Key("g,U"),
         "(swap case|tilde)": Key("tilde"),

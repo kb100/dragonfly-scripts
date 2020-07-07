@@ -2,17 +2,12 @@ import pytest
 from dragonfly import *
 from dragonfly.test import ElementTester, RecognitionFailure
 
-from _gvim import unload, GrammarSwitcher, FindMotionRef, mark, jumpMark, goToLine, pyCharmAction, RuleAlternative, \
-    RepeatActionRule
-
-unload()
-
-from test.utils import assert_same_typed_keys, typed_keys
-
-typed_keys  # todo how to tell pycharm this is not unused?
+from _gvim import GrammarSwitcher, FindMotionRef, mark, jumpMark, goToLine, pyCharmAction, RuleAlternative, \
+    RepeatActionRule, PycharmGlobalRule, NormalModeKeystrokeRule
+from test.utils import assert_same_typed_keys
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def engine():
     e = get_engine()
     e.connect()
@@ -94,3 +89,84 @@ def test_find_motion(engine):
     actual = tester.recognize('find alpha')
     expected = 'f,a'
     assert actual == expected
+
+
+@pytest.fixture()
+def pycharm_global_rule_tester(engine):
+    element = RuleRef(PycharmGlobalRule())
+    tester = ElementTester(element, engine)
+    yield tester
+
+
+def test_global_reformat(pycharm_global_rule_tester, typed_keys):
+    actual = pycharm_global_rule_tester.recognize('reformat')
+    expected = Key('ca-l')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_global_menu_select_default(pycharm_global_rule_tester, typed_keys):
+    actual = pycharm_global_rule_tester.recognize('cell')
+    expected = Key('enter')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_global_menu_select_one(pycharm_global_rule_tester, typed_keys):
+    actual = pycharm_global_rule_tester.recognize('cell one')
+    expected = Key('enter')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_global_menu_select_two(pycharm_global_rule_tester, typed_keys):
+    actual = pycharm_global_rule_tester.recognize('cell two')
+    expected = Key('down,enter')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_global_open_menu(pycharm_global_rule_tester, typed_keys):
+    actual = pycharm_global_rule_tester.recognize('menu alpha')
+    expected = Key('a-a')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+@pytest.fixture()
+def normal_mode_keystroke_tester(engine):
+    element = RuleRef(NormalModeKeystrokeRule())
+    tester = ElementTester(element, engine)
+    yield tester
+
+
+def test_normal_mode_kay(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('kay')
+    expected = Key('escape')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+def test_normal_mode_optional_count_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('down')
+    expected = Key('1,j')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+def test_normal_mode_optional_count_motion_with_count(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('ten down')
+    expected = Key('1,0,j')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+def test_normal_mode_no_count_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('hat')
+    expected = Key('caret')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+def test_normal_mode_mandatory_count_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('fifty column')
+    expected = Key('5,0,bar')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_find_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('find alpha')
+    expected = Key('1,f,a')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+def test_normal_mode_find_motion_with_count(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('ten find alpha')
+    expected = Key('1,0,f,a')
+    assert_same_typed_keys(typed_keys, actual, expected)

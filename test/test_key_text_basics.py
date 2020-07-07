@@ -1,10 +1,7 @@
 import pytest
 from dragonfly import *
-from test.utils import assert_same_typed_keys, typed_keys
 
-
-def test_empty():
-    pass
+from test.utils import assert_same_typed_keys
 
 
 def test_key_reflexive(typed_keys):
