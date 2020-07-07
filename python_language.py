@@ -1,7 +1,7 @@
 from dragonfly import *
 
 
-class PythonRules(MappingRule):
+class PythonRule(MappingRule):
     mapping = {
         # Commands and keywords:
         "and": Text(" and "),

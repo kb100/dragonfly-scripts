@@ -2,7 +2,7 @@
 
 from lib.common import executeSelect, LetterRef, LetterSequenceRef, singleCharacterKeyMap, EmptyAction
 from lib.format import FormatRule
-from python_rules import PythonRules
+from python_language import PythonRule
 
 gvim_exec_context = AppContext(executable="gvim")
 pycharm_exec_context = AppContext(executable="pycharm")
@@ -672,7 +672,7 @@ class InsertModeCommands(MappingRule):
 class InsertModeRule(CompoundRule):
     spec = '<alternative>'
     extras = [RuleAlternative([
-        RepeatActionRule(RuleAlternative([PythonRules(), InsertModeCommands(), FormatRule()])),
+        RepeatActionRule(RuleAlternative([PythonRule(), InsertModeCommands(), FormatRule()])),
         InsertModeToNormalModeRule(),
     ], name='alternative')]
 
