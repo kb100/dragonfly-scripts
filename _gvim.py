@@ -610,9 +610,12 @@ class InsertModeCommands(MappingRule):
         "[<n>] slap": Key("enter:%(n)d"),
         "[<n>] tab": Key("tab:%(n)d"),
         "[<n>] back": Key("backspace:%(n)d"),
+        "skip": Key('end'),
         "(scratch|Dell) line": Key("c-u"),
         "[<n>] left": Key("left:%(n)d"),
         "[<n>] right": Key("right:%(n)d"),
+        "[<n>] up": Key("up:%(n)d"),
+        "[<n>] down": Key("down:%(n)d"),
 
         'parens': Key('lparen,rparen,escape,i'),
         'brackets': Key('lbracket,rbracket,escape,i'),
@@ -633,8 +636,8 @@ class InsertModeCommands(MappingRule):
         '[<n>] shift after <letter>': Key('escape/10,%(n)d,F,%(letter)s,a'),
         '[<n>] before <letter>': Key('escape/10,%(n)d,f,%(letter)s,i'),
         '[<n>] shift before <letter>': Key('escape/10,%(n)d,F,%(letter)s,i'),
-        # snippets for snipmate
 
+        # snippets
         "comp list": Text("compl\t"),
         "comp list if": Text("compli\t"),
         "comp gen": Text("compg\t"),
