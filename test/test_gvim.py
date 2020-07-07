@@ -140,20 +140,24 @@ def test_normal_mode_kay(normal_mode_keystroke_tester, typed_keys):
     expected = Key('escape')
     assert_same_typed_keys(typed_keys, actual, expected)
 
+
 def test_normal_mode_optional_count_motion(normal_mode_keystroke_tester, typed_keys):
     actual = normal_mode_keystroke_tester.recognize('down')
     expected = Key('1,j')
     assert_same_typed_keys(typed_keys, actual, expected)
+
 
 def test_normal_mode_optional_count_motion_with_count(normal_mode_keystroke_tester, typed_keys):
     actual = normal_mode_keystroke_tester.recognize('ten down')
     expected = Key('1,0,j')
     assert_same_typed_keys(typed_keys, actual, expected)
 
+
 def test_normal_mode_no_count_motion(normal_mode_keystroke_tester, typed_keys):
     actual = normal_mode_keystroke_tester.recognize('hat')
     expected = Key('caret')
     assert_same_typed_keys(typed_keys, actual, expected)
+
 
 def test_normal_mode_mandatory_count_motion(normal_mode_keystroke_tester, typed_keys):
     actual = normal_mode_keystroke_tester.recognize('fifty column')
@@ -166,7 +170,56 @@ def test_normal_mode_find_motion(normal_mode_keystroke_tester, typed_keys):
     expected = Key('1,f,a')
     assert_same_typed_keys(typed_keys, actual, expected)
 
+
 def test_normal_mode_find_motion_with_count(normal_mode_keystroke_tester, typed_keys):
     actual = normal_mode_keystroke_tester.recognize('ten find alpha')
     expected = Key('1,0,f,a')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_optional_count_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('lower case whiskey')
+    expected = Key('1,g,u,w')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_optional_count_motion_with_count(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('two lower case whiskey')
+    expected = Key('2,g,u,w')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_no_count_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('lower case match')
+    expected = Key('g,u,percent')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_text_object_selection(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('lower case inner quote')
+    expected = Key('1,g,u,i,squote')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_text_object_selection_with_count(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('two lower case inner quote')
+    expected = Key('2,g,u,i,squote')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_mandatory_count_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('two lower case column')
+    expected = Key('2,g,u,bar')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_find_motion(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('lower case find alpha')
+    expected = Key('1,g,u,f,a')
+    assert_same_typed_keys(typed_keys, actual, expected)
+
+
+def test_normal_mode_lower_case_find_motion_with_count(normal_mode_keystroke_tester, typed_keys):
+    actual = normal_mode_keystroke_tester.recognize('two lower case find alpha')
+    expected = Key('2,g,u,f,a')
     assert_same_typed_keys(typed_keys, actual, expected)

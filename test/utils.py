@@ -1,10 +1,10 @@
 def assert_same_typed_keys(typed_keys, actual, expected):
-    actual.execute()
-    actual_events = typed_keys[:]
-    del typed_keys[:]
-
     expected.execute()
-    expected_events = typed_keys[:]
-    del typed_keys[:]
+    typed_keys['expected'] = typed_keys['buffer'][:]
+    del typed_keys['buffer'][:]
 
-    assert actual_events == expected_events
+    actual.execute()
+    typed_keys['actual'] = typed_keys['buffer'][:]
+    del typed_keys['buffer'][:]
+
+    assert typed_keys['actual'] == typed_keys['expected']
