@@ -1,5 +1,6 @@
 ﻿from dragonfly import *
-from lib.common import executeSelect, LetterRef, LetterSequenceRef, release, singleCharacterKeyMap, EmptyAction
+
+from lib.common import executeSelect, LetterRef, LetterSequenceRef, singleCharacterKeyMap, EmptyAction
 from lib.format import FormatRule
 from python_rules import PythonRules
 
@@ -266,14 +267,24 @@ class NormalModeKeystrokeRule(MappingRule):
     mapping = {
         "kay": Key("escape"),
         "slap": Key('enter'),
+
         '[<n>] <optional_count_motion>': Text('%(n)d') + Key('%(optional_count_motion)s'),
         '<no_count_motion>': Key('%(no_count_motion)s'),
         '<ln> <mandatory_count_motion>': Text('%(ln)d') + Key('%(mandatory_count_motion)s'),
         '[<n>] <find_motion>': Text('%(n)d') + Key('%(find_motion)s'),
 
-        #todo lower,upper operators need motions
-        "lower case": Key("g,u"),
-        "upper case": Key("g,U"),
+        '[<n>] lower case <optional_count_motion>': Text('%(n)d') + Key("g,u") + Key('%(optional_count_motion)s'),
+        'lower case <no_count_motion>': Key("g,u") + Key('%(no_count_motion)s'),
+        '[<n>] lower case <text_object_selection>': Text('%(n)d') + Key("g,u") + Key('%(text_object_selection)s'),
+        '<ln> lower case <mandatory_count_motion>': Text('%(ln)d') + Key("g,u") + Key('%(mandatory_count_motion)s'),
+        '[<n>] lower case <find_motion>': Text('%(n)d') + Key("g,u") + Key('%(find_motion)s'),
+
+        '[<n>] upper case <optional_count_motion>': Text('%(n)d') + Key("g,U") + Key('%(optional_count_motion)s'),
+        'upper case <no_count_motion>': Key("g,U") + Key('%(no_count_motion)s'),
+        '[<n>] upper case <text_object_selection>': Text('%(n)d') + Key("g,U") + Key('%(text_object_selection)s'),
+        '<ln> upper case <mandatory_count_motion>': Text('%(ln)d') + Key("g,U") + Key('%(mandatory_count_motion)s'),
+        '[<n>] upper case <find_motion>': Text('%(n)d') + Key("g,U") + Key('%(find_motion)s'),
+
         "(swap case|tilde)": Key("tilde"),
 
         "Center": Key("z,dot"),
@@ -292,9 +303,7 @@ class NormalModeKeystrokeRule(MappingRule):
         "[<n>] join": Key("J:%(n)d"),
 
         '[<n>] deed': Text('d%(n)dd'),
-        "Dell [register <register>]": Key("dquote,%(register)s,d"),
         "Dell pair": Key("m,z,percent,m,y,percent,x,backtick,y,x,backtick,z,left"),
-        "[<n>] strip <paired_symbol>": Text('%(n)d') + Key("dquote,z,d,i,%(paired_symbol)s,left,2,x,dquote,z,P"),
 
         "[<n>] (increment|increase)": Key("c-a:%(n)d"),
         "[<n>] (decrement|decrease)": Key("c-x:%(n)d"),
@@ -304,7 +313,6 @@ class NormalModeKeystrokeRule(MappingRule):
         "[<n>] undo": Key("u:%(n)d"),
         "[<n>] redo": Key("c-r:%(n)d"),
 
-        "(yank|copy) [register <register>]": Key("dquote,%(register)s,y"),
         "[<n>] (yank|copy) <optional_count_motion> [register <register>]":
             Text('%(n)d') + Key('dquote,%(register)s,y,%(optional_count_motion)s'),
         "(yank|copy) <no_count_motion> [register <register>]":
@@ -323,8 +331,8 @@ class NormalModeKeystrokeRule(MappingRule):
 
         "replace <letter>": Key("r,%(letter)s"),
 
-        "(shift left|unindent)": Key("langle,langle"),
-        "(shift right|indent)": Key("rangle,rangle"),
+        "[<n>] (shift left|unindent)": Text('%(n)d') + Key("langle,langle"),
+        "[<n>] (shift right|indent)": Text('%(n)d') + Key("rangle,rangle"),
 
         'Mark <letter>': Key('m,%(letter)s'),
         'jump <letter>': Key('backtick,%(letter)s'),
@@ -358,9 +366,9 @@ class NormalModeKeystrokeRule(MappingRule):
         'after dot': Text('/\\.\nl'),
         'after comma': Text('/,\nl'),
 
+        "[<n>] strip <paired_symbol>": Text('%(n)d') + Key("dquote,z,d,i,%(paired_symbol)s,left,2,x,dquote,z,P"),
         'surround <text_object_selection> with <paired_symbols>':
             Key('dquote,z,d,%(text_object_selection)s,i,%(paired_symbols)s,escape,dquote,z,P'),
-        # TODO
 
         'record macro': Key('q,a'),
         'stop recording': Key('q'),
