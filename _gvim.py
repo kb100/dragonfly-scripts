@@ -439,9 +439,8 @@ class NormalModeToInsertModeRule(MappingRule):
         Choice('mandatory_count_motion', mandatory_count_motion_keys),
         Choice('text_object_selection', text_object_keys),
         FindMotionRef('find_motion'),
-        IntegerRef('n', 1, 101),
+        IntegerRef('n', 1, 101, default=1),
     ]
-    defaults = {"n": 1, }
 
 
 @grammar_switcher.switches_to(visual_mode_grammar)
@@ -664,9 +663,8 @@ class InsertModeCommands(MappingRule):
         LetterSequenceRef('letter_sequence'),
         LetterRef('letter'),
         Dictation("text"),
-        IntegerRef("n", 1, 50),
+        IntegerRef("n", 1, 50, default=1),
     ]
-    defaults = {"n": 1, }
 
 
 class InsertModeRule(CompoundRule):
@@ -719,10 +717,9 @@ class ExModeCommands(MappingRule):
     }
     extras = [
         Dictation("text"),
-        IntegerRef("n", 1, 50),
+        IntegerRef("n", 1, 50, default=1),
         LetterSequenceRef('letter_sequence'),
     ]
-    defaults = {"n": 1, }
 
 
 class ExModeRule(CompoundRule):
