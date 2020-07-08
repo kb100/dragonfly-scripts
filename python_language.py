@@ -74,10 +74,3 @@ class PythonRule(MappingRule):
         "S Q lite 3": Text("sqlite3"),
         "subprocess": Text("subprocess"),
     }
-    extras = [
-        IntegerRef("n", 1, 100),
-        Dictation("text"),
-    ]
-    defaults = {
-        "n": 1
-    }

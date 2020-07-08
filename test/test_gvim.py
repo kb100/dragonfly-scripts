@@ -2,8 +2,9 @@ import pytest
 from dragonfly import *
 from dragonfly.test import ElementTester, RecognitionFailure
 
-from _gvim import GrammarSwitcher, FindMotionRef, mark, jumpMark, goToLine, pyCharmAction, RuleAlternative, \
+from _gvim import FindMotionRef, mark, jumpMark, goToLine, pyCharmAction, RuleOrElemAlternative, \
     RepeatActionRule, PycharmGlobalRule, NormalModeKeystrokeRule
+from lib.grammar_switcher import GrammarSwitcher
 from test.utils import assert_same_typed_keys
 
 
@@ -65,7 +66,7 @@ def test_rule_alternative(engine):
         mapping = {'test': v2}
 
     rules = [Rule1(), Rule2()]
-    element = RuleAlternative(rules)
+    element = RuleOrElemAlternative(rules)
     tester = ElementTester(element, engine)
     assert tester.recognize('foo') is v1
     assert tester.recognize('test') is v2

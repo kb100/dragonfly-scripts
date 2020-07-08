@@ -1,24 +1,58 @@
-﻿from dragonfly import *
+﻿import enum
+from dragonfly import *
 
-from lib.common import executeSelect, LetterRef, LetterSequenceRef, singleCharacterKeyMap, EmptyAction
+from lib.actions import MarkedAction
+from lib.common import executeSelect, LetterRef, LetterSequenceRef, singleCharacterKeyMap
+from lib.elements import RuleOrElemAlternative
 from lib.format import FormatRule
 from lib.grammar_switcher import GrammarSwitcher
+from lib.rules import RepeatActionRule
 from python_language import PythonRule
 
-gvim_exec_context = AppContext(executable="gvim")
-pycharm_exec_context = AppContext(executable="pycharm")
-vim_putty_context = AppContext(title="vim")
-gvim_context = (gvim_exec_context | vim_putty_context | pycharm_exec_context)
 
-ex_mode_grammar = Grammar("ExMode", context=gvim_context)
-normal_mode_grammar = Grammar("NormalMode", context=gvim_context)
-visual_mode_grammar = Grammar('VisualMode', context=gvim_context)
-insert_mode_grammar = Grammar("InsertMode", context=gvim_context)
-pycharm_grammar = Grammar('pycharm global', context=gvim_context)
+@enum.unique
+class VimMode(enum.Enum):
+    NORMAL = 0
+    INSERT = 1
+    VISUAL = 2
+    EX = 3
 
-EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, visual_mode_grammar, insert_mode_grammar, ex_mode_grammar]
 
-grammar_switcher = GrammarSwitcher([normal_mode_grammar, visual_mode_grammar, insert_mode_grammar, ex_mode_grammar])
+class VimGrammarSwitcher(GrammarSwitcher):
+    def __init__(self, normal=None, insert=None, visual=None, ex=None):
+        self.modes = {
+            VimMode.NORMAL: normal,
+            VimMode.INSERT: insert,
+            VimMode.VISUAL: visual,
+            VimMode.EX: ex,
+        }
+        grammars = [g for g in self.modes.itervalues() if g is not None]
+        super(VimGrammarSwitcher, self).__init__(grammars)
+
+    def switch_to_mode(self, mode):
+        self.switch_to(self.modes[mode])
+
+    def switch_to_mode_action(self, mode):
+        return self.switch_to_action(self.modes[mode])
+
+    @staticmethod
+    def mark_switches_to_mode(mode):
+        assert mode in VimMode
+
+        def class_modifier(cls):
+            assert hasattr(cls, 'value')
+            assert callable(cls.value)
+            old_value = cls.value
+
+            def value(this, node):
+                v = old_value(this, node)
+                return MarkedAction(v, mark=mode)
+
+            cls.value = value
+            return cls
+
+        return class_modifier
+
 
 text_object_keys = {
     "a (word|whiskey)": "a,w",
@@ -148,28 +182,7 @@ def pyCharmAction(s):
     return Key("cs-a/10") + Text(s) + Pause("50") + Key("enter")
 
 
-class RuleAlternative(Alternative):
-    def __init__(self, rules, name=None, default=None):
-        super(RuleAlternative, self).__init__([RuleRef(rule) for rule in rules], name, default)
-
-
-class RepeatActionRule(CompoundRule):
-    def __init__(self, element, name=None):
-        spec = "<sequence> [<n> times]"
-        extras = [Repetition(element, min=1, max=7, name="sequence"),
-                  IntegerRef("n", 1, 100), ]
-        self.defaults = {'n': 1}
-        super(RepeatActionRule, self).__init__(name, spec, extras)
-
-    def value(self, node):
-        seq = node.get_child_by_name('sequence', shallow=True).value()
-        n_node = node.get_child_by_name('n', shallow=True)
-        n = n_node.value() if n_node is not None else self.defaults['n']
-        return sum(seq * n, EmptyAction())
-
-
 class PycharmGlobalRule(MappingRule):
-    name = 'pycharm global'
     mapping = {
         'save all': Key('c-s'),
         "go to definition": Key("c-b"),
@@ -226,8 +239,6 @@ class PycharmGlobalRule(MappingRule):
 
 
 class NormalModeKeystrokeRule(MappingRule):
-    # exported = False
-
     mapping = {
         "kay": Key("escape"),
         "slap": Key('enter'),
@@ -378,7 +389,7 @@ class NormalModeKeystrokeRule(MappingRule):
     ]
 
 
-@grammar_switcher.switches_to(insert_mode_grammar)
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.INSERT)
 class NormalModeToInsertModeRule(MappingRule):
     mapping = {
         "insert": Key("i"),
@@ -407,7 +418,7 @@ class NormalModeToInsertModeRule(MappingRule):
     ]
 
 
-@grammar_switcher.switches_to(visual_mode_grammar)
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.VISUAL)
 class NormalModeToVisualModeRule(MappingRule):
     mapping = {
         "visual": Key("v"),
@@ -418,7 +429,7 @@ class NormalModeToVisualModeRule(MappingRule):
     }
 
 
-@grammar_switcher.switches_to(ex_mode_grammar)
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.EX)
 class NormalModeToExModeRule(MappingRule):
     mapping = {
         'execute': Key('colon'),
@@ -428,22 +439,43 @@ class NormalModeToExModeRule(MappingRule):
     }
 
 
-class NormalModeRule(CompoundRule):
-    spec = '(<normal_repeat_command> [<transition_command>]|<transition_command>)'
-    extras = [
-        RuleRef(RepeatActionRule(RuleRef(NormalModeKeystrokeRule())), name='normal_repeat_command'),
-        RuleAlternative([
-            NormalModeToInsertModeRule(),
-            NormalModeToExModeRule(),
-            NormalModeToVisualModeRule(),
-        ], name='transition_command')]
+class RepeatThenTransitionRule(CompoundRule):
+    non_transitions = []
+    transitions = []
+
+    def __init__(self, vim_mode_switcher, non_transitions=None, transitions=None, name=None):
+        assert isinstance(vim_mode_switcher, VimGrammarSwitcher)
+        self.switcher = vim_mode_switcher
+        if non_transitions is None: non_transitions = self.non_transitions
+        if transitions is None: transitions = self.transitions
+        spec = '(<repeat_command> [<transition_command>]|<transition_command>)'
+        extras = [
+            RuleRef(RepeatActionRule(RuleOrElemAlternative(non_transitions)), name='repeat_command'),
+            RuleOrElemAlternative(transitions, name='transition_command')]
+        super(RepeatThenTransitionRule, self).__init__(name, spec, extras)
 
     def _process_recognition(self, node, extras):
-        extras.get('normal_repeat_command', EmptyAction()).execute()
-        extras.get('transition_command', EmptyAction()).execute()
+        repeat = extras.get('repeat_command', None)
+        if repeat is not None:
+            repeat.execute()
+        transition = extras.get('transition_command', None)
+        if transition is not None:
+            assert isinstance(transition, MarkedAction)
+            transition.execute()
+            mode = transition.mark
+            self.switcher.switch_to_mode(mode)
 
 
-@grammar_switcher.switches_to(normal_mode_grammar)
+class NormalModeRule(RepeatThenTransitionRule):
+    non_transitions = [NormalModeKeystrokeRule()]
+    transitions = [
+        NormalModeToInsertModeRule(),
+        NormalModeToExModeRule(),
+        NormalModeToVisualModeRule(),
+    ]
+
+
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.NORMAL)
 class VisualModeToNormalModeRule(MappingRule):
     mapping = {
         'kay': Key('escape'),
@@ -471,8 +503,6 @@ class VisualModeToNormalModeRule(MappingRule):
 
 
 class VisualModeKeystrokeRule(MappingRule):
-    # exported = False
-
     mapping = {
         "slap": Key('enter'),
         '[<n>] <optional_count_motion>': Text('%(n)d') + Key('%(optional_count_motion)s'),
@@ -534,28 +564,22 @@ class VisualModeKeystrokeRule(MappingRule):
     ]
 
 
-@grammar_switcher.switches_to(ex_mode_grammar)
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.EX)
 class VisualModeToExModeRule(MappingRule):
     mapping = {
         '(sub|substitute)': Key('colon,s,slash'),
     }
 
 
-class VisualModeRule(CompoundRule):
-    spec = '(<visual_repeat_command> [<transition_command>]|<transition_command>)'
-    extras = [
-        RuleRef(RepeatActionRule(RuleRef(VisualModeKeystrokeRule())), name='visual_repeat_command'),
-        RuleAlternative([
-            VisualModeToNormalModeRule(),
-            VisualModeToExModeRule(),
-        ], name='transition_command')]
-
-    def _process_recognition(self, node, extras):
-        extras.get('visual_repeat_command', EmptyAction()).execute()
-        extras.get('transition_command', EmptyAction()).execute()
+class VisualModeRule(RepeatThenTransitionRule):
+    non_transitions = [VisualModeKeystrokeRule()]
+    transitions = [
+        VisualModeToNormalModeRule(),
+        VisualModeToExModeRule(),
+    ]
 
 
-@grammar_switcher.switches_to(normal_mode_grammar)
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.NORMAL)
 class InsertModeToNormalModeRule(MappingRule):
     mapping = {
         "kay": Key('escape'),
@@ -630,18 +654,21 @@ class InsertModeCommands(MappingRule):
     ]
 
 
-class InsertModeRule(CompoundRule):
-    spec = '<alternative>'
-    extras = [RuleAlternative([
-        RepeatActionRule(RuleAlternative([PythonRule(), InsertModeCommands(), FormatRule()])),
+class InsertModeRule(RepeatThenTransitionRule):
+    non_transitions = [
+        InsertModeCommands(),
+        FormatRule(),
+    ]
+    transitions = [
         InsertModeToNormalModeRule(),
-    ], name='alternative')]
-
-    def _process_recognition(self, node, extras):
-        extras['alternative'].execute()
+    ]
 
 
-@grammar_switcher.switches_to(normal_mode_grammar)
+class PythonInsertModeRule(InsertModeRule):
+    non_transitions = InsertModeRule.non_transitions + [PythonRule()]
+
+
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.NORMAL)
 class ExModeToNormalModeRule(MappingRule):
     mapping = {
         "kay": Key('escape'),
@@ -685,23 +712,37 @@ class ExModeCommands(MappingRule):
     ]
 
 
-class ExModeRule(CompoundRule):
-    spec = '<alternative>'
-    extras = [RuleAlternative([ExModeCommands(), ExModeToNormalModeRule()], name='alternative')]
+class ExModeRule(RepeatThenTransitionRule):
+    non_transitions = [ExModeCommands()]
+    transitions = [
+        ExModeToNormalModeRule(),
+    ]
 
-    def _process_recognition(self, node, extras):
-        extras['alternative'].execute()
 
+gvim_exec_context = AppContext(executable="gvim")
+pycharm_exec_context = AppContext(executable="pycharm")
+vim_putty_context = AppContext(title="vim")
+gvim_context = (gvim_exec_context | vim_putty_context | pycharm_exec_context)
 
-normal_mode_grammar.add_rule(NormalModeRule())
-visual_mode_grammar.add_rule(VisualModeRule())
-insert_mode_grammar.add_rule(InsertModeRule())
-ex_mode_grammar.add_rule(ExModeRule())
+ex_mode_grammar = Grammar("ExMode", context=gvim_context)
+normal_mode_grammar = Grammar("NormalMode", context=gvim_context)
+visual_mode_grammar = Grammar('VisualMode', context=gvim_context)
+insert_mode_grammar = Grammar("InsertMode", context=gvim_context)
+pycharm_grammar = Grammar('pycharm global', context=gvim_context)
+
+grammar_switcher = VimGrammarSwitcher(normal_mode_grammar, insert_mode_grammar, visual_mode_grammar, ex_mode_grammar)
+
+normal_mode_grammar.add_rule(NormalModeRule(grammar_switcher))
+visual_mode_grammar.add_rule(VisualModeRule(grammar_switcher))
+insert_mode_grammar.add_rule(PythonInsertModeRule(grammar_switcher))
+ex_mode_grammar.add_rule(ExModeRule(grammar_switcher))
+
 pycharm_grammar.add_rule(PycharmGlobalRule())
 
+EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, visual_mode_grammar, insert_mode_grammar, ex_mode_grammar]
 for grammar in EXPORT_GRAMMARS:
     grammar.load()
-grammar_switcher.switch_to(normal_mode_grammar)
+grammar_switcher.switch_to_mode(VimMode.NORMAL)
 
 
 def unload():

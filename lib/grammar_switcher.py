@@ -1,4 +1,7 @@
-class GrammarSwitcher:
+from dragonfly import MappingRule, Grammar, Function
+
+
+class GrammarSwitcher(object):
     def __init__(self, grammars=None):
         self.grammars = grammars if grammars is not None else []
 
@@ -31,3 +34,23 @@ class GrammarSwitcher:
             return cls
 
         return class_modifier
+
+
+class SwitcherMappingRule(MappingRule):
+    mapping = {}
+    extras = []
+    defaults = {}
+
+    def __init__(self, switcher, switches_to, name=None, mapping=None, extras=None, defaults=None):
+        assert isinstance(switches_to, Grammar)
+        assert isinstance(switcher, GrammarSwitcher)
+        if mapping is None: mapping = self.mapping
+        if extras is None: extras = self.extras
+        if defaults is None: defaults = self.defaults
+        self.switcher = switcher
+        self.switches_to = switches_to
+        super(SwitcherMappingRule, self).__init__(name, mapping, extras, defaults)
+
+    def value(self, node):
+        v = super(SwitcherMappingRule, self).value(node)
+        return v + self.switcher.switch_to_action(self.switches_to)

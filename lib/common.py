@@ -125,6 +125,3 @@ def executeSelect(n, offset=1):
         Key('enter').execute()
 
 
-class EmptyAction(ActionBase):
-    def execute(self, data=None):
-        pass
