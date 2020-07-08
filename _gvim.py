@@ -220,10 +220,9 @@ class PycharmGlobalRule(MappingRule):
         'open file': Key('a-n/10,f'),
     }
     extras = [
-        IntegerRef('n', 1, 10),
+        IntegerRef('n', 1, 10, default=1),
         LetterRef('letter'),
     ]
-    defaults = {'n': 1, }
 
 
 class NormalModeKeystrokeRule(MappingRule):
@@ -520,20 +519,19 @@ class VisualModeKeystrokeRule(MappingRule):
     }
     extras = [
         Dictation("text"),
-        IntegerRef("n", 1, 101),
-        ShortIntegerRef("ln", 1, 10000),
-        ShortIntegerRef("lm", 1, 10000),
+        IntegerRef("n", 1, 101, default=1),
+        ShortIntegerRef("ln", 1, 10000, default=1),
+        ShortIntegerRef("lm", 1, 10000, default=1),
         LetterRef('letter'),
         Choice('no_count_motion', no_count_motion_keys),
         Choice('optional_count_motion', optional_count_motion_keys),
         Choice('mandatory_count_motion', mandatory_count_motion_keys),
         Choice('text_object_selection', text_object_keys),
         FindMotionRef('find_motion'),
-        Choice('register', register_keys),
+        Choice('register', register_keys, default='dquote'),
         Choice('paired_symbol', paired_symbol_keys),
         Choice('paired_symbols', paired_symbols_keys),
     ]
-    defaults = {"n": 1, "ln": 1, "lm": 1, "register": "dquote"}
 
 
 @grammar_switcher.switches_to(ex_mode_grammar)
