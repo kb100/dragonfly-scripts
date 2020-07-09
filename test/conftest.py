@@ -1,5 +1,6 @@
 import pytest
-from dragonfly import ActionBase, Keyboard, Pause
+from dragonfly import ActionBase, Keyboard, Pause, get_engine
+from dragonfly.test import RuleTestGrammar
 
 
 @pytest.fixture()
@@ -23,3 +24,16 @@ def typed_keys(monkeypatch):
     monkeypatch.setattr(Pause, '_execute_events', pause)
 
     return ret
+
+
+@pytest.fixture(scope='session')
+def engine():
+    e = get_engine()
+    with e.connection():
+        yield e
+
+
+@pytest.fixture()
+def rule_test_grammar(engine):
+    grammar = RuleTestGrammar(engine=engine)
+    return grammar

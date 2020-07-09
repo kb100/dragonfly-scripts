@@ -85,7 +85,7 @@ class DynamicGrammarStateManager(RecognitionObserver):
             self.apply_states_to_grammars(grammars, grammar_states[name])
 
 
-dynamic_module_names = ["_chrome", "_gvim"]
+dynamic_module_names = ["_chrome", "_pycharm"]
 try:
     dynamic_modules = {name: importlib.import_module(name) for name in dynamic_module_names}
 except:
@@ -104,7 +104,7 @@ manager = DynamicGrammarStateManager(dynamic_module_grammars, dynamic_modules,
                                      DynamicContext(fallback=None, focus_context=focus_context))
 manager.register()
 
-spoken_modules = {"chrome": "_chrome", "(pycharm|gvim)": "_gvim"}
+spoken_modules = {"chrome": "_chrome", "(pycharm|gvim)": "_pycharm"}
 
 
 class DynamicMappingRule(MappingRule):
