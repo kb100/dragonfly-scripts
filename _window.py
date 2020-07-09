@@ -1,12 +1,11 @@
+from difflib import get_close_matches
+
 from dragonfly import (Grammar,
                        CompoundRule,
                        Choice, Dictation, Integer)
-
-from dragonfly.windows.window import Window
 from dragonfly.windows.monitor import monitors
 from dragonfly.windows.rectangle import Rectangle
-from difflib import get_close_matches
-from time import sleep
+from dragonfly.windows.window import Window
 
 
 class PrintWindowDetails(CompoundRule):
