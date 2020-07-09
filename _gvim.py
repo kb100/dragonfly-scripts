@@ -218,6 +218,7 @@ class PycharmGlobalRule(MappingRule):
         'close (all but this|others)': pyCharmAction('close others'),
         'close left': pyCharmAction('close all to the left'),
         'close right': pyCharmAction('close all to the right'),
+        'unsplit': pyCharmAction('unsplit'),
         'git commit': Key('c-k'),
         'show diff': Key('c-d'),
         'next diff': Key('f7'),
