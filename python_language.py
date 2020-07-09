@@ -33,6 +33,7 @@ class PythonRule(MappingRule):
         "greater [than] equals": Text(" >= "),
         "if": Text("if "),
         "in": Text(" in "),
+        "is": Text(" is "),
         "(int|I N T)": Text("int()") + Key("left"),
         "init": Text("init"),
         "import": Text("import "),

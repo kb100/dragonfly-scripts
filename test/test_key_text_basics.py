@@ -4,6 +4,11 @@ from dragonfly import *
 from test.utils import assert_same_typed_keys
 
 
+def test_key_types_something(typed_keys):
+    Key('a').execute()
+    # length should be 2 because of key down and key up event
+    assert len(typed_keys["buffer"]) == 2
+
 def test_key_reflexive(typed_keys):
     assert_same_typed_keys(typed_keys, Key('a'), Key('a'))
 

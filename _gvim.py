@@ -54,32 +54,28 @@ class VimGrammarSwitcher(GrammarSwitcher):
         return class_modifier
 
 
-text_object_keys = {
-    "a (word|whiskey)": "a,w",
-    "inner (word|whiskey)": "i,w",
-    "a (big|shift) (word|whiskey)": "a,W",
-    "inner (big|shift) (word|whiskey)": "i,W",
-    "a sentence": "a,s",
-    "inner sentence": "i,s",
-    "a paragraph": "a,p",
-    "inner paragraph": "i,p",
-    "a (bracket|lack|rack)": "a,rbracket",
-    "inner (bracket|lack|rack)": "i,rbracket",
-    "a (paren|lip|rip)": "a,rparen",
-    "inner (paren|lip|rip)": "i,rparen",
-    "a (angle|langle|rangle)": "a,rangle",
-    "inner (angle|langle|rangle)": "i,rangle",
-    "a tag": "a,t",
-    "inner tag": "i,t",
-    "a (brace|lace|race)": "a,rbrace",
-    "inner (brace|lace|race)": "i,rbrace",
-    "a (double quote|D quote|doubles)": "a,dquote",
-    "inner (double quote|D quote|doubles)": "i,dquote",
-    "a (quote|singles)": "a,squote",
-    "inner (quote|singles)": "i,squote",
-    "a (backtick|tick|grave)": "a,backtick",
-    "inner (backtick|tick|grave)": "i,backtick",
+text_object_selection_exclusive_keys = {
+    'a': 'a',
+    '(inner|in)': 'i',
 }
+text_object_selection_objects = {
+    "(word|whiskey)": "w",
+    "(big|shift) (word|whiskey)": "W",
+    "sentence": "s",
+    "paragraph": "p",
+    "(bracket|lack|rack)": "rbracket",
+    "(paren|lip|rip)": "rparen",
+    "(angle|langle|rangle)": "rangle",
+    "tag": "t",
+    "(brace|lace|race)": "rbrace",
+    "(double quote|D quote|doubles)": "dquote",
+    "(quote|singles)": "squote",
+    "(backtick|tick|grave)": "backtick",
+}
+text_object_keys = {}
+for sp1, k1 in text_object_selection_exclusive_keys.iteritems():
+    for sp2, k2 in text_object_selection_objects.iteritems():
+        text_object_keys[sp1 + ' ' + sp2] = k1 + ',' + k2
 paired_symbols_keys = {
     "(bracket|lack|rack)": "lbracket,rbracket",
     "(paren|lip|rip)": "lparen,rparen",
