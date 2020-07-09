@@ -86,7 +86,11 @@ class DynamicGrammarStateManager(RecognitionObserver):
 
 
 dynamic_module_names = ["_chrome", "_gvim"]
-dynamic_modules = {name: importlib.import_module(name) for name in dynamic_module_names}
+try:
+    dynamic_modules = {name: importlib.import_module(name) for name in dynamic_module_names}
+except:
+    dynamic_modules = {}
+
 dynamic_module_grammars = {name: dynamic_modules[name].EXPORT_GRAMMARS for name in dynamic_module_names}
 citrix_context = AppContext(executable='notepad')
 nomachine_context = AppContext(executable='nxplayer')
