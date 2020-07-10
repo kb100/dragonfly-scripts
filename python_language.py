@@ -34,6 +34,7 @@ class PythonRule(MappingRule):
         "if": Text("if "),
         "in": Text(" in "),
         "is": Text(" is "),
+        'is instance': Text('isinstance()')+Key('left'),
         "(int|I N T)": Text("int()") + Key("left"),
         "init": Text("init"),
         "import": Text("import "),

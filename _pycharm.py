@@ -67,7 +67,7 @@ class PycharmGlobalRule(MappingRule):
 
 
 class PythonInsertModeRule(InsertModeRule):
-    non_transitions = InsertModeRule.non_transitions + [PythonRule()]
+    non_transitions = InsertModeRule.non_transitions + [PythonRule(exported=False)]
 
 
 context = AppContext(executable="pycharm")

@@ -196,8 +196,8 @@ def test_repeat_then_transition_rule(rule_test_grammar, typed_keys):
         mapping = {'bar': Key('b')}
 
     vim_mode_switcher = VimGrammarSwitcher()
-    non_transitions = [RepeatRule()]
-    transitions = [TransitionRule()]
+    non_transitions = [RepeatRule(exported=False)]
+    transitions = [TransitionRule(exported=False)]
     rule = RepeatThenTransitionRule(vim_mode_switcher, non_transitions, transitions)
 
     rule_test_grammar.add_rule(rule)

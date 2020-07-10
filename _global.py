@@ -1,8 +1,9 @@
-from dragonfly import *
-from lib.format import FormatRule
-from lib.common import SpellLetterSequenceRule
-from lib.sound import play, SND_DING, SND_DEACTIVATE
 import natlink
+from dragonfly import *
+
+from lib.common import SpellLetterSequenceRule
+from lib.format import FormatRule
+from lib.sound import play, SND_DING, SND_DEACTIVATE
 
 
 def reload_natlink():
