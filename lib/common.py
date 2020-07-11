@@ -53,7 +53,7 @@ specialCharacterKeyMap = {
 
     'ampersand': 'ampersand',
     'apostrophe': 'apostrophe',
-    'asterisk': 'asterisk',
+    '(star|asterisk)': 'asterisk',
     'at': 'at',
     'backslash': 'backslash',
     'backtick': 'backtick',
