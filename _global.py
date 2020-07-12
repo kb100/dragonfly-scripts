@@ -1,4 +1,3 @@
-import natlink
 from dragonfly import *
 
 from lib.common import SpellLetterSequenceRule
@@ -7,12 +6,14 @@ from lib.sound import play, SND_DING, SND_DEACTIVATE
 
 
 def reload_natlink():
+    import natlink
     natlink.setMicState('off')
     natlink.setMicState('on')
     play(SND_DING)
 
 
 def go_to_sleep():
+    import natlink
     natlink.setMicState('sleeping')
     play(SND_DEACTIVATE)
 
