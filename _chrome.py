@@ -1,5 +1,5 @@
 from dragonfly import *
-from lib.common import LetterSequenceRef, release, executeSelect
+from lib.common import LetterSequenceRef, release, execute_select
 
 
 rules = MappingRule(
@@ -73,7 +73,7 @@ rules = MappingRule(
         'view source': Key('escape') + Key('g,s'),
         'search bar': Key('c-l'),
 
-        '(cell|select) [<n>]': Function(executeSelect, offset=0),
+        '(cell|select) [<n>]': Function(execute_select, offset=0),
     },
     extras=[
         LetterSequenceRef('letter_sequence'),

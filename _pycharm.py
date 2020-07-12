@@ -1,7 +1,7 @@
 ﻿from dragonfly import *
 
 from gvim import InsertModeRule, VimGrammarSwitcher, NormalModeRule, VisualModeRule, ExModeRule, VimMode
-from lib.common import executeSelect, LetterRef
+from lib.common import execute_select, LetterRef
 from python_language import PythonRule
 
 
@@ -25,7 +25,7 @@ class PycharmGlobalRule(MappingRule):
         "reformat line": Key('escape,V,ca-l,escape'),
         'comment': Key('c-slash'),
         'suggest': Key('a-enter'),
-        '(cell|select) [<n>]': Function(executeSelect, offset=1),
+        '(cell|select) [<n>]': Function(execute_select, offset=1),
         'show error': Key('c-f1'),
         'run program': Key('s-f10'),
         'run dot dot dot': Key('as-f10'),

@@ -4,7 +4,7 @@ import enum
 from dragonfly import *
 
 from lib.actions import MarkedAction
-from lib.common import LetterRef, LetterSequenceRef, singleCharacterKeyMap
+from lib.common import LetterRef, LetterSequenceRef, single_character_key_map
 from lib.elements import RuleOrElemAlternative
 from lib.format import FormatRule
 from lib.grammar_switcher import GrammarSwitcher
@@ -193,7 +193,7 @@ class FindMotionRef(Choice):
 valid_registers = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
                    'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'dot', 'percent',
                    'hash', 'colon', 'dquote']
-register_keys = {k: v for k, v in singleCharacterKeyMap.iteritems() if v.lower() in valid_registers}
+register_keys = {k: v for k, v in single_character_key_map.iteritems() if v.lower() in valid_registers}
 
 
 def mark(s):
