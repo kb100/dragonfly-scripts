@@ -29,6 +29,7 @@ class PycharmGlobalRule(MappingRule):
         'show error': Key('c-f1'),
         'run program': Key('s-f10'),
         'run dot dot dot': Key('as-f10'),
+        'execute selection [in console]': Key('as-e'),
         'kill program': Key('c-f2'),
         'debug program': Key('s-f9'),
         'debug dot dot dot': Key('as-f9'),
