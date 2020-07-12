@@ -48,6 +48,8 @@ class PycharmGlobalRule(MappingRule):
         'close right': pyCharmAction('close all to the right'),
         'unsplit': pyCharmAction('unsplit'),
         'git commit': Key('c-k'),
+        'git pull': Key('a-s/20,a-u'),
+        'git push': Key('cs-k'),
         'show diff': Key('c-d'),
         'next diff': Key('f7'),
         'next section': Key('tab'),
