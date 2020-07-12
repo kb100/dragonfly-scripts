@@ -28,7 +28,7 @@ def typed_keys(monkeypatch):
 
 @pytest.fixture(scope='session')
 def engine():
-    e = get_engine('text')
+    e = get_engine()
     with e.connection():
         yield e
 

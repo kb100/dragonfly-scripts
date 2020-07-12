@@ -69,7 +69,7 @@ class RepeatThenTransitionRule(CompoundRule):
         self.switcher = vim_mode_switcher
         if non_transitions is None: non_transitions = self.non_transitions
         if transitions is None: transitions = self.transitions
-        assert all([not isinstance(x, Rule) or not x.exported for x in non_transitions+transitions])
+        assert all([not isinstance(x, Rule) or not x.exported for x in non_transitions + transitions])
         spec = '(<repeat_command> [<transition_command>]|<transition_command>)'
         extras = [
             RuleRef(RepeatActionRule(RuleOrElemAlternative(non_transitions)), name='repeat_command'),
