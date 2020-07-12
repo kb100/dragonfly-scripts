@@ -1,0 +1,3 @@
+pytest
+dragonfly2
+setuptools
