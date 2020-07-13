@@ -37,10 +37,9 @@ class GlobalRule(MappingRule):
         'reload natlink': Function(reload_natlink),
     }
     extras = [
-        IntegerRef('n', 1, 101),
+        IntegerRef('n', 1, 101, default=1),
         Dictation('text'),
     ]
-    defaults = {'n': 1}
 
 
 global_grammar = Grammar('global grammar')
