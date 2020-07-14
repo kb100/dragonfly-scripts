@@ -7,12 +7,15 @@ def replace_lowercase_keys(words):
     return [lowercase_key_map.get(word, word) for word in words]
 
 
-def words_from_dictation(dictation):
+def words_from_dictation(dictation, make_lowercase=True, hyphens_to_spaces=True, replace_nato_with_key=True):
     text = str(dictation)
-    text = text.lower()
-    text = text.replace('-', ' ')
+    if make_lowercase:
+        text = text.lower()
+    if hyphens_to_spaces:
+        text = text.replace('-', ' ')
     words = text.split(' ')
-    words = replace_lowercase_keys(words)
+    if replace_nato_with_key:
+        words = replace_lowercase_keys(words)
     return words
 
 
@@ -100,6 +103,12 @@ def format_say(dictation):
     """ say <dictation> """
     words = words_from_dictation(dictation)
     return ' '.join(words)
+
+
+# Format: Some words, and some more. And some more.
+def format_prose(dictation):
+    """ prose <dictation> """
+    return str(dictation)
 
 
 def FormatAction(function):

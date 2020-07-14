@@ -84,3 +84,9 @@ def test_format_say():
     actual = format_say('some words')
     expected = 'some words'
     assert actual == expected
+
+
+def test_format_prose():
+    actual = format_prose('Some words, a full sentence. And another.')
+    expected = 'Some words, a full sentence. And another.'
+    assert actual == expected
