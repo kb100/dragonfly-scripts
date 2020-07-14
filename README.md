@@ -13,7 +13,7 @@ The Chrome grammar also assumes you are using the Vimium plug-in.
 ## Changing files
 Note that if you change one of the files,
 you will need to turn your mic off and back on again.
-Dragon calls your modules unload function when you turn the mic back on again,
+Dragon calls each module's unload function when you turn the mic back on again,
 _not_ when you turn it off.
 Then it reruns your module in the same Python environment.
 If you made a change in any imported modules from your module, 
