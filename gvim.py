@@ -208,6 +208,12 @@ def goToLine(s):
     return Key("colon") + Text("%(" + s + ")d\n") + Pause('10')
 
 
+def swap_quotes_action(n, swap_quotes):
+    q1 = swap_quotes
+    q2 = 'squote' if q1 == 'dquote' else 'dquote'
+    (Text(str(n)) + Key("dquote,z,d,i," + q1 + ',left,2,r,' + q2 + ',right,dquote,z,P')).execute()
+
+
 class NormalModeKeystrokeRule(MappingRule):
     mapping = {
         "kay": Key("escape"),
@@ -312,6 +318,7 @@ class NormalModeKeystrokeRule(MappingRule):
         'after comma': Text('/,\nl'),
 
         "[<n>] strip <paired_symbol>": Text('%(n)d') + Key("dquote,z,d,i,%(paired_symbol)s,left,2,x,dquote,z,P"),
+        "[<n>] swap <swap_quotes>": Function(swap_quotes_action),
         'surround <text_object_selection> with <paired_symbols>':
             Key('dquote,z,d,%(text_object_selection)s,i,%(paired_symbols)s,escape,dquote,z,P'),
 
@@ -356,6 +363,11 @@ class NormalModeKeystrokeRule(MappingRule):
         Choice('register', register_keys, default='dquote'),
         Choice('paired_symbol', paired_symbol_keys),
         Choice('paired_symbols', paired_symbols_keys),
+        Choice('swap_quotes',
+               choices={
+                   "(double quote|D quote|doubles)": "dquote",
+                   "(quote|singles)": "squote",
+               })
     ]
 
 
