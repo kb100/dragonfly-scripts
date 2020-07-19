@@ -70,19 +70,19 @@ class PycharmGlobalRule(MappingRule):
 
 
 class PythonInsertModeRule(InsertModeRule):
+    transitions = InsertModeRule.transitions
     non_transitions = InsertModeRule.non_transitions + [PythonRule(exported=False)]
 
 
 context = AppContext(executable="pycharm")
 
-ex_mode_grammar = Grammar("ExMode", context=context)
-normal_mode_grammar = Grammar("NormalMode", context=context)
-visual_mode_grammar = Grammar('VisualMode', context=context)
-insert_mode_grammar = Grammar("InsertMode", context=context)
+ex_mode_grammar = Grammar("PyExMode", context=context)
+normal_mode_grammar = Grammar("PyNormalMode", context=context)
+visual_mode_grammar = Grammar('PyVisualMode', context=context)
+insert_mode_grammar = Grammar("PyInsertMode", context=context)
 pycharm_grammar = Grammar('pycharm global', context=context)
 
 grammar_switcher = VimGrammarSwitcher(normal_mode_grammar, insert_mode_grammar, visual_mode_grammar, ex_mode_grammar)
-
 normal_mode_grammar.add_rule(NormalModeRule(grammar_switcher))
 visual_mode_grammar.add_rule(VisualModeRule(grammar_switcher))
 insert_mode_grammar.add_rule(PythonInsertModeRule(grammar_switcher))
@@ -94,6 +94,24 @@ EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, visual_mode_grammar, in
 for grammar in EXPORT_GRAMMARS:
     grammar.load()
 grammar_switcher.switch_to_mode(VimMode.NORMAL)
+
+
+# class ActiveGrammarsReporter(RecognitionObserver):
+#     def on_post_recognition(self, words, rule, node, results):
+#         print '!!!!!!' + str(rule) + ' recognized: ' + ' '.join(words)
+#         if rule:
+#             print str(rule) + ' is enabled: ' + str(rule.enabled)
+#             print str(rule) + ' is active: ' + str(rule.active)
+#         print 'report grammars'
+#         for grammar in [normal_mode_grammar, insert_mode_grammar]:
+#             print 'Grammar: ' + grammar.name
+#             print 'Enabled', grammar.enabled
+#             print 'Active rules:', grammar.active_rules
+#             print 'Rules:', grammar.rules
+#
+#
+# reporter = ActiveGrammarsReporter()
+# reporter.register()
 
 
 def unload():

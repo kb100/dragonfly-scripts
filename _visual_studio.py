@@ -54,10 +54,10 @@ class CPPInsertModeRule(InsertModeRule):
 
 context = AppContext(executable="devenv")
 
-ex_mode_grammar = Grammar("ExMode", context=context)
-normal_mode_grammar = Grammar("NormalMode", context=context)
-visual_mode_grammar = Grammar('VisualMode', context=context)
-insert_mode_grammar = Grammar("InsertMode", context=context)
+ex_mode_grammar = Grammar("VSExMode", context=context)
+normal_mode_grammar = Grammar("VSNormalMode", context=context)
+visual_mode_grammar = Grammar('VSVisualMode', context=context)
+insert_mode_grammar = Grammar("VSInsertMode", context=context)
 visual_studio_grammar = Grammar('VisualStudio', context=context)
 
 grammar_switcher = VimGrammarSwitcher(normal_mode_grammar, insert_mode_grammar, visual_mode_grammar, ex_mode_grammar)

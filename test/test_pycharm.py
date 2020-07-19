@@ -2,7 +2,7 @@ import pytest
 from dragonfly import *
 from dragonfly.test import ElementTester
 
-from _pycharm import PythonInsertModeRule, pyCharmAction, PycharmGlobalRule
+from pycharm import PythonInsertModeRule, pyCharmAction, PycharmGlobalRule
 from gvim import VimGrammarSwitcher
 from test.utils import assert_same_typed_keys
 

@@ -31,7 +31,7 @@ class VimGrammarSwitcher(GrammarSwitcher):
         super(VimGrammarSwitcher, self).__init__(grammars)
 
     def __str__(self):
-        active = [mode for mode, gram in self.modes.iteritems() if gram.enabled]
+        active = [mode for mode, gram in self.modes.iteritems() if gram and gram.enabled]
         return str(self.__class__) + str(active)
 
     def switch_to_mode(self, mode):
@@ -72,7 +72,7 @@ class RepeatThenTransitionRule(CompoundRule):
         assert all([not isinstance(x, Rule) or not x.exported for x in non_transitions + transitions])
         spec = '(<repeat_command> [<transition_command>]|<transition_command>)'
         extras = [
-            RuleRef(RepeatActionRule(RuleOrElemAlternative(non_transitions)), name='repeat_command'),
+            RuleRef(RepeatActionRule(RuleOrElemAlternative(non_transitions), exported=False), name='repeat_command'),
             RuleOrElemAlternative(transitions, name='transition_command')]
         super(RepeatThenTransitionRule, self).__init__(name, spec, extras)
 
@@ -118,6 +118,7 @@ paired_symbols_keys = {
     "(double quote|D quote|doubles)": "dquote,dquote",
     "(quote|singles)": "squote,squote",
     "(backtick|tick|grave)": "backtick,backtick",
+    'space': 'space,space',
 }
 paired_symbol_keys = {
     "(bracket|lack|rack)": "rbracket",
@@ -127,6 +128,7 @@ paired_symbol_keys = {
     "(double quote|D quote|doubles)": "dquote",
     "(quote|singles)": "squote",
     "(backtick|tick|grave)": "backtick",
+    'space': 'space',
 }
 optional_count_motion_keys = {
     'left': 'h',
@@ -273,7 +275,7 @@ class NormalModeKeystrokeRule(MappingRule):
         '[<n>] (yank|copy) <find_motion> [register <register>]':
             Text('%(n)d') + Key('dquote,%(register)s,y,%(find_motion)s'),
 
-        '[<n>] duplicate line': Text('Y%(n)dp'),
+        '[<n>] (duplicate|dupe) [line]': Text('Y%(n)dp'),
         "(yank|copy) line [register <register>]": Key("dquote,%(register)s,y,y"),
         "(yank|copy) <n> lines [register <register>]": Key("dquote,%(register)s") + Text("%(n)dY"),
 
@@ -379,7 +381,11 @@ class NormalModeToInsertModeRule(MappingRule):
         'change <no_count_motion>': Key('c,%(no_count_motion)s,'),
         '[<n>] change <optional_count_motion>': Text('%(n)d') + Key('c,%(optional_count_motion)s'),
         '<n> change <mandatory_count_motion>': Text('%(n)d') + Key('c,%(mandatory_count_motion)s'),
-        '[<n>] change <text_object_selection>': Text('%(n)d') + Key("c,%(text_object_selection)s"),
+        '[<n>] chan <text_object_selection_object>': Text('%(n)d') + Key("c,a,%(text_object_selection_object)s"),
+        '[<n>] chin <text_object_selection_object>': Text('%(n)d') + Key("c,i,%(text_object_selection_object)s"),
+        '[<n>] chat <letter>': Text('%(n)d') + Key("c,t,%(letter)s"),
+        '[<n>] chaff <letter>': Text('%(n)d') + Key("c,f,%(letter)s"),
+        '[<n>] chew': Text('%(n)d') + Key('c,w'),
         '[<n>] change <find_motion>': Text('%(n)d') + Key('c,%(find_motion)s'),
         "(big|shift) change": Key("C"),
         "change (char|letter)": Key("s"),
@@ -391,10 +397,12 @@ class NormalModeToInsertModeRule(MappingRule):
     }
 
     extras = [
+        LetterRef('letter'),
         Choice('no_count_motion', no_count_motion_keys),
         Choice('optional_count_motion', optional_count_motion_keys),
         Choice('mandatory_count_motion', mandatory_count_motion_keys),
         Choice('text_object_selection', text_object_keys),
+        Choice('text_object_selection_object', text_object_selection_objects),
         FindMotionRef('find_motion'),
         IntegerRef('n', 1, 101, default=1),
     ]
