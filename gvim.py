@@ -60,12 +60,50 @@ class VimGrammarSwitcher(GrammarSwitcher):
         return class_modifier
 
 
+class TransitionThenRepeatRule(CompoundRule):
+    non_transitions = []
+    transitions = []
+
+    def __init__(self, vim_mode_switcher=None, non_transitions=None, transitions=None, name=None, exported=None):
+        if vim_mode_switcher is not None: assert isinstance(vim_mode_switcher, VimGrammarSwitcher)
+        self.switcher = vim_mode_switcher
+        if non_transitions is None: non_transitions = self.non_transitions
+        if transitions is None: transitions = self.transitions
+        assert all([not isinstance(x, Rule) or not x.exported for x in non_transitions + transitions])
+        spec = '<transition_command> [<repeat_command>]'
+        extras = [
+            RuleRef(RepeatActionRule(RuleOrElemAlternative(non_transitions), exported=False), name='repeat_command'),
+            RuleOrElemAlternative(transitions, name='transition_command')]
+        super(TransitionThenRepeatRule, self).__init__(name=name, spec=spec, extras=extras, exported=exported)
+
+    def _process_recognition(self, node, extras):
+        transition = extras['transition_command']
+        transition.execute()
+        if isinstance(transition, MarkedAction):
+            mode = transition.mark
+            self.switcher.switch_to_mode(mode)
+        repeat = extras.get('repeat_command', None)
+        if repeat is not None:
+            repeat.execute()
+
+    def value(self, node):
+        transition = node.get_child_by_name('transition_command', shallow=True)
+        repeat = node.get_child_by_name('repeat_command', shallow=True)
+        transition_value = transition.value()
+        v = transition_value + repeat.value() if repeat else transition_value
+        if isinstance(transition_value, MarkedAction):
+            mode = transition_value.mark
+            return MarkedAction(v, mode)
+        else:
+            return v
+
+
 class RepeatThenTransitionRule(CompoundRule):
     non_transitions = []
     transitions = []
 
-    def __init__(self, vim_mode_switcher, non_transitions=None, transitions=None, name=None):
-        assert isinstance(vim_mode_switcher, VimGrammarSwitcher)
+    def __init__(self, vim_mode_switcher=None, non_transitions=None, transitions=None, name=None, exported=None):
+        if vim_mode_switcher is not None: assert isinstance(vim_mode_switcher, VimGrammarSwitcher)
         self.switcher = vim_mode_switcher
         if non_transitions is None: non_transitions = self.non_transitions
         if transitions is None: transitions = self.transitions
@@ -74,7 +112,7 @@ class RepeatThenTransitionRule(CompoundRule):
         extras = [
             RuleRef(RepeatActionRule(RuleOrElemAlternative(non_transitions), exported=False), name='repeat_command'),
             RuleOrElemAlternative(transitions, name='transition_command')]
-        super(RepeatThenTransitionRule, self).__init__(name, spec, extras)
+        super(RepeatThenTransitionRule, self).__init__(name=name, spec=spec, extras=extras, exported=exported)
 
     def _process_recognition(self, node, extras):
         repeat = extras.get('repeat_command', None)
@@ -82,10 +120,24 @@ class RepeatThenTransitionRule(CompoundRule):
             repeat.execute()
         transition = extras.get('transition_command', None)
         if transition is not None:
-            assert isinstance(transition, MarkedAction)
             transition.execute()
-            mode = transition.mark
-            self.switcher.switch_to_mode(mode)
+            if isinstance(transition, MarkedAction):
+                mode = transition.mark
+                self.switcher.switch_to_mode(mode)
+
+    def value(self, node):
+        transition = node.get_child_by_name('transition_command', shallow=True)
+        repeat = node.get_child_by_name('repeat_command', shallow=True)
+        if transition is not None:
+            transition_value = transition.value()
+            v = transition_value + repeat.value() if repeat else transition_value
+            if isinstance(transition_value, MarkedAction):
+                mode = transition_value.mark
+                return MarkedAction(v, mode)
+            else:
+                return v
+        else:
+            return repeat.value()
 
 
 text_object_selection_exclusive_keys = {
@@ -216,7 +268,7 @@ def swap_quotes_action(n, swap_quotes):
     (Text(str(n)) + Key("dquote,z,d,i," + q1 + ',left,2,r,' + q2 + ',right,dquote,z,P')).execute()
 
 
-class NormalModeKeystrokeRule(MappingRule):
+class NormalModeCommands(MappingRule):
     mapping = {
         "kay": Key("escape"),
         "slap": Key('enter'),
@@ -374,7 +426,7 @@ class NormalModeKeystrokeRule(MappingRule):
 
 
 @VimGrammarSwitcher.mark_switches_to_mode(VimMode.INSERT)
-class NormalModeToInsertModeRule(MappingRule):
+class NormalModeToInsertModeCommands(MappingRule):
     mapping = {
         "insert": Key("i"),
         "(shift|big) insert": Key("I"),
@@ -409,7 +461,7 @@ class NormalModeToInsertModeRule(MappingRule):
 
 
 @VimGrammarSwitcher.mark_switches_to_mode(VimMode.VISUAL)
-class NormalModeToVisualModeRule(MappingRule):
+class NormalModeToVisualModeCommands(MappingRule):
     mapping = {
         "visual": Key("v"),
         "visual line": Key("s-v"),
@@ -420,7 +472,7 @@ class NormalModeToVisualModeRule(MappingRule):
 
 
 @VimGrammarSwitcher.mark_switches_to_mode(VimMode.EX)
-class NormalModeToExModeRule(MappingRule):
+class NormalModeToExModeCommands(MappingRule):
     mapping = {
         'execute': Key('colon'),
         '(sub|substitute)': Key('colon,s,slash'),
@@ -429,17 +481,8 @@ class NormalModeToExModeRule(MappingRule):
     }
 
 
-class NormalModeRule(RepeatThenTransitionRule):
-    non_transitions = [NormalModeKeystrokeRule(exported=False)]
-    transitions = [
-        NormalModeToInsertModeRule(exported=False),
-        NormalModeToExModeRule(exported=False),
-        NormalModeToVisualModeRule(exported=False),
-    ]
-
-
 @VimGrammarSwitcher.mark_switches_to_mode(VimMode.NORMAL)
-class VisualModeToNormalModeRule(MappingRule):
+class VisualModeToNormalModeCommands(MappingRule):
     mapping = {
         'kay': Key('escape'),
         'join': Key('J'),
@@ -465,7 +508,7 @@ class VisualModeToNormalModeRule(MappingRule):
     ]
 
 
-class VisualModeKeystrokeRule(MappingRule):
+class VisualModeCommands(MappingRule):
     mapping = {
         "slap": Key('enter'),
         '[<n>] <optional_count_motion>': Text('%(n)d') + Key('%(optional_count_motion)s'),
@@ -528,22 +571,14 @@ class VisualModeKeystrokeRule(MappingRule):
 
 
 @VimGrammarSwitcher.mark_switches_to_mode(VimMode.EX)
-class VisualModeToExModeRule(MappingRule):
+class VisualModeToExModeCommands(MappingRule):
     mapping = {
         '(sub|substitute)': Key('colon,s,slash'),
     }
 
 
-class VisualModeRule(RepeatThenTransitionRule):
-    non_transitions = [VisualModeKeystrokeRule(exported=False)]
-    transitions = [
-        VisualModeToNormalModeRule(exported=False),
-        VisualModeToExModeRule(exported=False),
-    ]
-
-
 @VimGrammarSwitcher.mark_switches_to_mode(VimMode.NORMAL)
-class InsertModeToNormalModeRule(MappingRule):
+class InsertModeToNormalModeCommands(MappingRule):
     mapping = {
         "kay": Key('escape'),
         "cancel": Key('escape,u'),
@@ -617,18 +652,8 @@ class InsertModeCommands(MappingRule):
     ]
 
 
-class InsertModeRule(RepeatThenTransitionRule):
-    non_transitions = [
-        InsertModeCommands(exported=False),
-        FormatRule(exported=False),
-    ]
-    transitions = [
-        InsertModeToNormalModeRule(exported=False),
-    ]
-
-
 @VimGrammarSwitcher.mark_switches_to_mode(VimMode.NORMAL)
-class ExModeToNormalModeRule(MappingRule):
+class ExModeToNormalModeCommands(MappingRule):
     mapping = {
         "kay": Key('escape'),
         "cancel": Key('escape'),
@@ -671,8 +696,75 @@ class ExModeCommands(MappingRule):
     ]
 
 
+mode_commands = {
+    VimMode.NORMAL: [NormalModeCommands(exported=False)],
+    VimMode.VISUAL: [VisualModeCommands(exported=False)],
+    VimMode.INSERT: [InsertModeCommands(exported=False), FormatRule(exported=False)],
+    VimMode.EX: [ExModeCommands(exported=False)],
+}
+
+
+class NormalModeToInsertModeRule(TransitionThenRepeatRule):
+    transitions = [NormalModeToInsertModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.INSERT]
+
+
+class NormalModeToVisualModeRule(TransitionThenRepeatRule):
+    transitions = [NormalModeToVisualModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.VISUAL]
+
+
+class NormalModeToExModeRule(TransitionThenRepeatRule):
+    transitions = [NormalModeToExModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.EX]
+
+
+class InsertModeToNormalModeRule(TransitionThenRepeatRule):
+    transitions = [InsertModeToNormalModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.NORMAL]
+
+
+class VisualModeToNormalModeRule(TransitionThenRepeatRule):
+    transitions = [VisualModeToNormalModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.NORMAL]
+
+
+class VisualModeToExModeRule(TransitionThenRepeatRule):
+    transitions = [VisualModeToExModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.EX]
+
+
+class ExModeToNormalModeRule(TransitionThenRepeatRule):
+    transitions = [ExModeToNormalModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.NORMAL]
+
+
+class NormalModeRule(RepeatThenTransitionRule):
+    non_transitions = mode_commands[VimMode.NORMAL]
+    transitions = [
+        NormalModeToInsertModeRule(exported=False),
+        NormalModeToExModeRule(exported=False),
+        NormalModeToVisualModeRule(exported=False),
+    ]
+
+
+class VisualModeRule(RepeatThenTransitionRule):
+    non_transitions = mode_commands[VimMode.VISUAL]
+    transitions = [
+        VisualModeToNormalModeRule(exported=False),
+        VisualModeToExModeRule(exported=False),
+    ]
+
+
+class InsertModeRule(RepeatThenTransitionRule):
+    non_transitions = mode_commands[VimMode.INSERT]
+    transitions = [
+        InsertModeToNormalModeRule(exported=False),
+    ]
+
+
 class ExModeRule(RepeatThenTransitionRule):
-    non_transitions = [ExModeCommands(exported=False)]
+    non_transitions = mode_commands[VimMode.EX]
     transitions = [
         ExModeToNormalModeRule(exported=False),
     ]

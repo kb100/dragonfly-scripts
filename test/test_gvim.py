@@ -3,9 +3,9 @@ from dragonfly import *
 from dragonfly.test import ElementTester, RecognitionFailure
 
 from gvim import FindMotionRef, mark, jumpMark, goToLine, RuleOrElemAlternative, \
-    RepeatActionRule, NormalModeKeystrokeRule, NormalModeToInsertModeRule, \
+    RepeatActionRule, NormalModeCommands, NormalModeToInsertModeRule, \
     NormalModeToVisualModeRule, NormalModeToExModeRule, RepeatThenTransitionRule, VimGrammarSwitcher, VimMode, \
-    NormalModeRule, VisualModeToNormalModeRule, VisualModeKeystrokeRule, VisualModeToExModeRule, VisualModeRule, \
+    NormalModeRule, VisualModeToNormalModeRule, VisualModeCommands, VisualModeToExModeRule, VisualModeRule, \
     InsertModeToNormalModeRule, InsertModeCommands, InsertModeRule, ExModeToNormalModeRule, \
     ExModeCommands, ExModeRule
 from lib.actions import MarkedAction
@@ -15,7 +15,7 @@ from test.utils import assert_same_typed_keys
 
 @pytest.fixture()
 def normal_mode_keystroke_tester(engine):
-    element = RuleRef(NormalModeKeystrokeRule())
+    element = RuleRef(NormalModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
@@ -64,7 +64,7 @@ def visual_mode_to_normal_mode_tester(engine):
 
 @pytest.fixture()
 def visual_mode_keystroke_tester(engine):
-    element = RuleRef(VisualModeKeystrokeRule())
+    element = RuleRef(VisualModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
