@@ -13,7 +13,7 @@ class ScrollType(Enum):
 
 
 class ScrollState(object):
-    timer = None  # type: Optional[Timer]
+    timer = None  # type: Timer
     speed = 0  # type: int
     action = ScrollType.WHEEL_DOWN  # type: ScrollType
 
