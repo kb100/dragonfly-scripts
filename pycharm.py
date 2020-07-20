@@ -59,6 +59,8 @@ class PycharmGlobalRule(MappingRule):
         'compare previous file': Key('a-left'),
         'menu <letter>': Key('a-%(letter)s'),
         'hide menu': Key('s-escape'),
+        'fold all': Key('cs-npsub'),
+        '(expand|unfold) all': Key('cs-npadd'),
         'fold': Key('c-npsub'),
         '(expand|unfold)': Key('c-npadd'),
         'open file': Key('a-n/10,f'),
