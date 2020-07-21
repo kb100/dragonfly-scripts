@@ -738,8 +738,8 @@ def transitions_out_of_mode(transitions, mode):
     ))
 
 
-def make_vim_grammars(commands, transitions, context, prefix=''):
-    transition_then_repeats = {
+def _make_transition_then_repeats(commands, prefix, transitions):
+    return {
         (source, destination):
             [TransitionThenRepeatRule(non_transitions=commands[destination],
                                       transitions=transitions[(source, destination)],
@@ -747,18 +747,25 @@ def make_vim_grammars(commands, transitions, context, prefix=''):
                                       exported=False)]
         for (source, destination) in transitions
     }
+
+
+def _make_mode_rules(commands, grammar_switcher, prefix, transition_then_repeats):
+    return {
+        mode: RepeatThenTransitionRule(vim_mode_switcher=grammar_switcher,
+                                       non_transitions=commands[mode],
+                                       transitions=transitions_out_of_mode(transition_then_repeats, mode),
+                                       name=prefix + mode.name.capitalize() + 'Rule')
+        for mode in commands
+    }
+
+
+def make_vim_grammars(commands, transitions, context=None, prefix=''):
+    transition_then_repeats = _make_transition_then_repeats(commands, prefix, transitions)
     grammars = {mode: Grammar(prefix + mode.name.capitalize() + 'Mode', context=context) for mode in commands}
 
     grammar_switcher = VimGrammarSwitcher(grammars[VimMode.NORMAL], grammars[VimMode.INSERT], grammars[VimMode.VISUAL],
                                           grammars[VimMode.EX])
-    mode_rules = {
-        mode:
-            RepeatThenTransitionRule(vim_mode_switcher=grammar_switcher,
-                                     non_transitions=commands[mode],
-                                     transitions=transitions_out_of_mode(transition_then_repeats, mode),
-                                     name=prefix + mode.name.capitalize() + 'Rule')
-        for mode in commands
-    }
+    mode_rules = _make_mode_rules(commands, grammar_switcher, prefix, transition_then_repeats)
     for mode in commands:
         grammars[mode].add_rule(mode_rules[mode])
     return grammars, grammar_switcher

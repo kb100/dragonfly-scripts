@@ -2,23 +2,8 @@ import pytest
 from dragonfly import *
 from dragonfly.test import ElementTester
 
-from pycharm import PythonInsertModeRule, pyCharmAction, PycharmGlobalRule
-from gvim import VimGrammarSwitcher
+from pycharm import pyCharmAction, PycharmGlobalRule
 from test.utils import assert_same_typed_keys
-
-
-@pytest.fixture()
-def python_insert_mode_rule_tester(rule_test_grammar):
-    vgs = VimGrammarSwitcher()
-    rule_test_grammar.add_rule(PythonInsertModeRule(vgs))
-    return rule_test_grammar
-
-
-def test_python_insert_mode_rule(python_insert_mode_rule_tester, typed_keys):
-    extras = python_insert_mode_rule_tester.recognize_extras('if zulu is none kay')
-    actual = extras['repeat_command'] + extras['transition_command']
-    expected = Text('if z is None') + Key('escape')
-    assert_same_typed_keys(typed_keys, actual, expected)
 
 
 def test_pycharm_action(typed_keys):

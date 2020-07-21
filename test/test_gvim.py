@@ -1,16 +1,21 @@
 import pytest
-from dragonfly import *
 from dragonfly.test import ElementTester, RecognitionFailure
 
-from gvim import FindMotionRef, mark, jumpMark, goToLine, RuleOrElemAlternative, \
-    RepeatActionRule, NormalModeCommands, NormalModeToInsertModeRule, \
-    NormalModeToVisualModeRule, NormalModeToExModeRule, RepeatThenTransitionRule, VimGrammarSwitcher, VimMode, \
-    NormalModeRule, VisualModeToNormalModeRule, VisualModeCommands, VisualModeToExModeRule, VisualModeRule, \
-    InsertModeToNormalModeRule, InsertModeCommands, InsertModeRule, ExModeToNormalModeRule, \
-    ExModeCommands, ExModeRule
+from gvim import *
+from gvim import _make_mode_rules, _make_transition_then_repeats
 from lib.actions import MarkedAction
 from lib.grammar_switcher import GrammarSwitcher
 from test.utils import assert_same_typed_keys
+
+
+@pytest.fixture(scope='session')
+def mode_rules():
+    vgs = VimGrammarSwitcher()
+    prefix = ''
+    commands = get_commands()
+    transitions = get_transitions()
+    transitions_then_repeats = _make_transition_then_repeats(commands, prefix, transitions)
+    return _make_mode_rules(commands, vgs, '', transitions_then_repeats)
 
 
 @pytest.fixture()
@@ -21,43 +26,42 @@ def normal_mode_keystroke_tester(engine):
 
 
 @pytest.fixture()
-def normal_mode_rule_tester(rule_test_grammar):
-    vgs = VimGrammarSwitcher()
-    rule_test_grammar.add_rule(NormalModeRule(vgs))
+def normal_mode_rule_tester(mode_rules, rule_test_grammar):
+    rule_test_grammar.add_rule(mode_rules[VimMode.NORMAL])
     return rule_test_grammar
 
 
 def test_normal_mode_rule(normal_mode_rule_tester, typed_keys):
-    extras = normal_mode_rule_tester.recognize_extras('up up down change word')
+    extras = normal_mode_rule_tester.recognize_extras('up up down change word down up')
     actual = extras['repeat_command'] + extras['transition_command']
-    expected = Key('1,k,1,k,1,j,1,c,w')
+    expected = Key('1,k,1,k,1,j,1,c,w,down,up')
     assert_same_typed_keys(typed_keys, actual, expected)
 
 
 @pytest.fixture()
 def normal_mode_to_insert_mode_tester(engine):
-    element = RuleRef(NormalModeToInsertModeRule())
+    element = RuleRef(NormalModeToInsertModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
 
 @pytest.fixture()
 def normal_mode_to_visual_mode_tester(engine):
-    element = RuleRef(NormalModeToVisualModeRule())
+    element = RuleRef(NormalModeToVisualModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
 
 @pytest.fixture()
 def normal_mode_to_ex_mode_tester(engine):
-    element = RuleRef(NormalModeToExModeRule())
+    element = RuleRef(NormalModeToExModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
 
 @pytest.fixture()
 def visual_mode_to_normal_mode_tester(engine):
-    element = RuleRef(VisualModeToNormalModeRule())
+    element = RuleRef(VisualModeToNormalModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
@@ -71,35 +75,34 @@ def visual_mode_keystroke_tester(engine):
 
 @pytest.fixture()
 def visual_mode_to_ex_mode_tester(engine):
-    element = RuleRef(VisualModeToExModeRule())
+    element = RuleRef(VisualModeToExModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
 
 @pytest.fixture()
-def visual_mode_rule_tester(rule_test_grammar):
-    vgs = VimGrammarSwitcher()
-    rule_test_grammar.add_rule(VisualModeRule(vgs))
+def visual_mode_rule_tester(mode_rules, rule_test_grammar):
+    rule_test_grammar.add_rule(mode_rules[VimMode.VISUAL])
     return rule_test_grammar
 
 
 def test_visual_mode_rule_motion_then_yank(visual_mode_rule_tester, typed_keys):
-    extras = visual_mode_rule_tester.recognize_extras('inner lip yank')
+    extras = visual_mode_rule_tester.recognize_extras('inner lip yank down up')
     actual = extras['repeat_command'] + extras['transition_command']
-    expected = Key('i,rparen,dquote,dquote,y')
+    expected = Key('i,rparen,dquote,dquote,y,1,j,1,k')
     assert_same_typed_keys(typed_keys, actual, expected)
 
 
 @pytest.fixture()
 def insert_mode_to_normal_mode_tester(engine):
-    element = RuleRef(InsertModeToNormalModeRule())
+    element = RuleRef(InsertModeToNormalModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
 
 @pytest.fixture()
 def insert_mode_to_normal_mode_tester(engine):
-    element = RuleRef(InsertModeToNormalModeRule())
+    element = RuleRef(InsertModeToNormalModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
@@ -112,22 +115,21 @@ def insert_mode_commands_tester(engine):
 
 
 @pytest.fixture()
-def insert_mode_rule_tester(rule_test_grammar):
-    vgs = VimGrammarSwitcher()
-    rule_test_grammar.add_rule(InsertModeRule(vgs))
+def insert_mode_rule_tester(mode_rules, rule_test_grammar):
+    rule_test_grammar.add_rule(mode_rules[VimMode.INSERT])
     return rule_test_grammar
 
 
 def test_insert_mode_rule(insert_mode_rule_tester, typed_keys):
-    extras = insert_mode_rule_tester.recognize_extras('skip kay')
+    extras = insert_mode_rule_tester.recognize_extras('skip kay down up')
     actual = extras['repeat_command'] + extras['transition_command']
-    expected = Key('end,escape')
+    expected = Key('end,escape,1,j,1,k')
     assert_same_typed_keys(typed_keys, actual, expected)
 
 
 @pytest.fixture()
 def ex_mode_to_normal_mode_tester(engine):
-    element = RuleRef(ExModeToNormalModeRule())
+    element = RuleRef(ExModeToNormalModeCommands())
     tester = ElementTester(element, engine)
     return tester
 
@@ -140,16 +142,15 @@ def ex_mode_commands_tester(engine):
 
 
 @pytest.fixture()
-def ex_mode_rule_tester(rule_test_grammar):
-    vgs = VimGrammarSwitcher()
-    rule_test_grammar.add_rule(ExModeRule(vgs))
+def ex_mode_rule_tester(mode_rules, rule_test_grammar):
+    rule_test_grammar.add_rule(mode_rules[VimMode.EX])
     return rule_test_grammar
 
 
 def test_ex_mode_rule(ex_mode_rule_tester, typed_keys):
-    extras = ex_mode_rule_tester.recognize_extras('substitute alpha slash bravo slash slap')
+    extras = ex_mode_rule_tester.recognize_extras('substitute alpha slash bravo slash slap down up')
     actual = extras['repeat_command'] + extras['transition_command']
-    expected = Text('s/a/b/\n')
+    expected = Text('s/a/b/\n1j1k')
     assert_same_typed_keys(typed_keys, actual, expected)
 
 
