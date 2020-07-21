@@ -87,7 +87,7 @@ class DynamicGrammarStateManager(RecognitionObserver):
             self.apply_states_to_grammars(grammars, grammar_states[name])
 
 
-dynamic_module_names = ['chrome', 'pycharm']
+dynamic_module_names = ['chrome', 'pycharm', 'visual_studio']
 dynamic_modules = {}
 for name in dynamic_module_names:
     try:
@@ -112,7 +112,7 @@ manager = DynamicGrammarStateManager(dynamic_module_grammars, dynamic_modules,
                                      DynamicContext(fallback=None, focus_context=focus_context))
 manager.register()
 
-spoken_modules = {"chrome": "chrome", "pycharm": "pycharm"}
+spoken_modules = {"chrome": "chrome", "pycharm": "pycharm", "visual studio": "visual_studio"}
 
 
 class DynamicMappingRule(MappingRule):

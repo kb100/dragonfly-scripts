@@ -1,6 +1,6 @@
 ﻿from dragonfly import *
 
-from gvim import InsertModeRule, VimGrammarSwitcher, NormalModeRule, VisualModeRule, ExModeRule, VimMode
+from gvim import get_commands, get_transitions, make_vim_grammars, VimMode
 from lib.common import execute_select, LetterRef
 from python_language import PythonRule
 
@@ -71,28 +71,17 @@ class PycharmGlobalRule(MappingRule):
     ]
 
 
-class PythonInsertModeRule(InsertModeRule):
-    transitions = InsertModeRule.transitions
-    non_transitions = InsertModeRule.non_transitions + [PythonRule(exported=False)]
-
-
+commands = get_commands()
+commands[VimMode.INSERT].append(PythonRule(exported=False))
+transitions = get_transitions()
 context = AppContext(executable="pycharm")
+grammars, grammar_switcher = make_vim_grammars(commands, transitions, context, prefix='Py')
 
-ex_mode_grammar = Grammar("PyExMode", context=context)
-normal_mode_grammar = Grammar("PyNormalMode", context=context)
-visual_mode_grammar = Grammar('PyVisualMode', context=context)
-insert_mode_grammar = Grammar("PyInsertMode", context=context)
 pycharm_grammar = Grammar('pycharm global', context=context)
-
-grammar_switcher = VimGrammarSwitcher(normal_mode_grammar, insert_mode_grammar, visual_mode_grammar, ex_mode_grammar)
-normal_mode_grammar.add_rule(NormalModeRule(grammar_switcher))
-visual_mode_grammar.add_rule(VisualModeRule(grammar_switcher))
-insert_mode_grammar.add_rule(PythonInsertModeRule(grammar_switcher))
-ex_mode_grammar.add_rule(ExModeRule(grammar_switcher))
-
 pycharm_grammar.add_rule(PycharmGlobalRule())
 
-EXPORT_GRAMMARS = [pycharm_grammar, normal_mode_grammar, visual_mode_grammar, insert_mode_grammar, ex_mode_grammar]
+EXPORT_GRAMMARS = list(grammars.itervalues()) + [pycharm_grammar]
+grammars = None
 for grammar in EXPORT_GRAMMARS:
     grammar.load()
 grammar_switcher.switch_to_mode(VimMode.NORMAL)
@@ -117,22 +106,8 @@ grammar_switcher.switch_to_mode(VimMode.NORMAL)
 
 
 def unload():
-    global pycharm_grammar
-    if pycharm_grammar: pycharm_grammar.unload()
-    pycharm_grammar = None
-
-    global normal_mode_grammar
-    if normal_mode_grammar: normal_mode_grammar.unload()
-    normal_mode_grammar = None
-
-    global visual_mode_grammar
-    if visual_mode_grammar: visual_mode_grammar.unload()
-    visual_mode_grammar = None
-
-    global insert_mode_grammar
-    if insert_mode_grammar: insert_mode_grammar.unload()
-    insert_mode_grammar = None
-
-    global ex_mode_grammar
-    if ex_mode_grammar: ex_mode_grammar.unload()
-    ex_mode_grammar = None
+    global EXPORT_GRAMMARS
+    if EXPORT_GRAMMARS is not None:
+        for grammar in EXPORT_GRAMMARS:
+            grammar.unload()
+        EXPORT_GRAMMARS = None

@@ -1,4 +1,5 @@
 ﻿import logging
+from itertools import chain
 
 import enum
 from dragonfly import *
@@ -508,6 +509,13 @@ class VisualModeToNormalModeCommands(MappingRule):
     ]
 
 
+@VimGrammarSwitcher.mark_switches_to_mode(VimMode.INSERT)
+class VisualModeToInsertModeCommands(MappingRule):
+    mapping = {
+        'change': Key('c'),
+    }
+
+
 class VisualModeCommands(MappingRule):
     mapping = {
         "slap": Key('enter'),
@@ -696,75 +704,61 @@ class ExModeCommands(MappingRule):
     ]
 
 
-mode_commands = {
-    VimMode.NORMAL: [NormalModeCommands(exported=False)],
-    VimMode.VISUAL: [VisualModeCommands(exported=False)],
-    VimMode.INSERT: [InsertModeCommands(exported=False), FormatRule(exported=False)],
-    VimMode.EX: [ExModeCommands(exported=False)],
-}
+def get_transitions():
+    return {
+        (VimMode.NORMAL, VimMode.INSERT): [NormalModeToInsertModeCommands(exported=False)],
+        (VimMode.NORMAL, VimMode.VISUAL): [NormalModeToVisualModeCommands(exported=False)],
+        (VimMode.NORMAL, VimMode.EX): [NormalModeToExModeCommands(exported=False)],
+        (VimMode.INSERT, VimMode.NORMAL): [InsertModeToNormalModeCommands(exported=False)],
+        (VimMode.VISUAL, VimMode.NORMAL): [VisualModeToNormalModeCommands(exported=False)],
+        (VimMode.VISUAL, VimMode.INSERT): [VisualModeToInsertModeCommands(exported=False)],
+        (VimMode.VISUAL, VimMode.EX): [VisualModeToExModeCommands(exported=False)],
+        (VimMode.EX, VimMode.NORMAL): [ExModeToNormalModeCommands(exported=False)],
+    }
 
 
-class NormalModeToInsertModeRule(TransitionThenRepeatRule):
-    transitions = [NormalModeToInsertModeCommands(exported=False)]
-    non_transitions = mode_commands[VimMode.INSERT]
+def get_commands():
+    return {
+        VimMode.NORMAL: [NormalModeCommands(exported=False)],
+        VimMode.VISUAL: [VisualModeCommands(exported=False)],
+        VimMode.INSERT: [InsertModeCommands(exported=False), FormatRule(exported=False)],
+        VimMode.EX: [ExModeCommands(exported=False)],
+    }
 
 
-class NormalModeToVisualModeRule(TransitionThenRepeatRule):
-    transitions = [NormalModeToVisualModeCommands(exported=False)]
-    non_transitions = mode_commands[VimMode.VISUAL]
+def transitions_into_mode(transitions, mode):
+    return list(chain.from_iterable(
+        rules for (source, destination), rules in transitions.iteritems() if destination is mode
+    ))
 
 
-class NormalModeToExModeRule(TransitionThenRepeatRule):
-    transitions = [NormalModeToExModeCommands(exported=False)]
-    non_transitions = mode_commands[VimMode.EX]
+def transitions_out_of_mode(transitions, mode):
+    return list(chain.from_iterable(
+        rules for (source, destination), rules in transitions.iteritems() if source is mode
+    ))
 
 
-class InsertModeToNormalModeRule(TransitionThenRepeatRule):
-    transitions = [InsertModeToNormalModeCommands(exported=False)]
-    non_transitions = mode_commands[VimMode.NORMAL]
+def make_vim_grammars(commands, transitions, context, prefix=''):
+    transition_then_repeats = {
+        (source, destination):
+            [TransitionThenRepeatRule(non_transitions=commands[destination],
+                                      transitions=transitions[(source, destination)],
+                                      name=prefix + source.name.capitalize() + 'To' + destination.name.capitalize() + 'Rule',
+                                      exported=False)]
+        for (source, destination) in transitions
+    }
+    grammars = {mode: Grammar(prefix + mode.name.capitalize() + 'Mode', context=context) for mode in commands}
 
-
-class VisualModeToNormalModeRule(TransitionThenRepeatRule):
-    transitions = [VisualModeToNormalModeCommands(exported=False)]
-    non_transitions = mode_commands[VimMode.NORMAL]
-
-
-class VisualModeToExModeRule(TransitionThenRepeatRule):
-    transitions = [VisualModeToExModeCommands(exported=False)]
-    non_transitions = mode_commands[VimMode.EX]
-
-
-class ExModeToNormalModeRule(TransitionThenRepeatRule):
-    transitions = [ExModeToNormalModeCommands(exported=False)]
-    non_transitions = mode_commands[VimMode.NORMAL]
-
-
-class NormalModeRule(RepeatThenTransitionRule):
-    non_transitions = mode_commands[VimMode.NORMAL]
-    transitions = [
-        NormalModeToInsertModeRule(exported=False),
-        NormalModeToExModeRule(exported=False),
-        NormalModeToVisualModeRule(exported=False),
-    ]
-
-
-class VisualModeRule(RepeatThenTransitionRule):
-    non_transitions = mode_commands[VimMode.VISUAL]
-    transitions = [
-        VisualModeToNormalModeRule(exported=False),
-        VisualModeToExModeRule(exported=False),
-    ]
-
-
-class InsertModeRule(RepeatThenTransitionRule):
-    non_transitions = mode_commands[VimMode.INSERT]
-    transitions = [
-        InsertModeToNormalModeRule(exported=False),
-    ]
-
-
-class ExModeRule(RepeatThenTransitionRule):
-    non_transitions = mode_commands[VimMode.EX]
-    transitions = [
-        ExModeToNormalModeRule(exported=False),
-    ]
+    grammar_switcher = VimGrammarSwitcher(grammars[VimMode.NORMAL], grammars[VimMode.INSERT], grammars[VimMode.VISUAL],
+                                          grammars[VimMode.EX])
+    mode_rules = {
+        mode:
+            RepeatThenTransitionRule(vim_mode_switcher=grammar_switcher,
+                                     non_transitions=commands[mode],
+                                     transitions=transitions_out_of_mode(transition_then_repeats, mode),
+                                     name=prefix + mode.name.capitalize() + 'Rule')
+        for mode in commands
+    }
+    for mode in commands:
+        grammars[mode].add_rule(mode_rules[mode])
+    return grammars, grammar_switcher

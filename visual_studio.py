@@ -1,7 +1,7 @@
 ﻿from dragonfly import *
 
 from cpp_language import CPlusPlusRule
-from gvim import InsertModeRule, VimGrammarSwitcher, NormalModeRule, VisualModeRule, ExModeRule, VimMode
+from gvim import VimMode, get_commands, get_transitions, make_vim_grammars
 from lib.common import LetterRef, execute_select
 
 
@@ -48,51 +48,25 @@ class VisualStudioGlobalRule(MappingRule):
     ]
 
 
-class CPPInsertModeRule(InsertModeRule):
-    non_transitions = InsertModeRule.non_transitions + [CPlusPlusRule(exported=False)]
-
-
+commands = get_commands()
+commands[VimMode.INSERT].append(CPlusPlusRule(exported=False))
+transitions = get_transitions()
 context = AppContext(executable="devenv")
+grammars, grammar_switcher = make_vim_grammars(commands, transitions, context, prefix='VS')
 
-ex_mode_grammar = Grammar("VSExMode", context=context)
-normal_mode_grammar = Grammar("VSNormalMode", context=context)
-visual_mode_grammar = Grammar('VSVisualMode', context=context)
-insert_mode_grammar = Grammar("VSInsertMode", context=context)
-visual_studio_grammar = Grammar('VisualStudio', context=context)
-
-grammar_switcher = VimGrammarSwitcher(normal_mode_grammar, insert_mode_grammar, visual_mode_grammar, ex_mode_grammar)
-
-normal_mode_grammar.add_rule(NormalModeRule(grammar_switcher))
-visual_mode_grammar.add_rule(VisualModeRule(grammar_switcher))
-insert_mode_grammar.add_rule(CPPInsertModeRule(grammar_switcher))
-ex_mode_grammar.add_rule(ExModeRule(grammar_switcher))
-
+visual_studio_grammar = Grammar('VStudio global', context=context)
 visual_studio_grammar.add_rule(VisualStudioGlobalRule())
 
-EXPORT_GRAMMARS = [visual_studio_grammar, normal_mode_grammar, visual_mode_grammar, insert_mode_grammar,
-                   ex_mode_grammar]
+EXPORT_GRAMMARS = list(grammars.itervalues()) + [visual_studio_grammar]
+grammars = None
 for grammar in EXPORT_GRAMMARS:
     grammar.load()
 grammar_switcher.switch_to_mode(VimMode.NORMAL)
 
 
 def unload():
-    global visual_studio_grammar
-    if visual_studio_grammar: visual_studio_grammar.unload()
-    visual_studio_grammar = None
-
-    global normal_mode_grammar
-    if normal_mode_grammar: normal_mode_grammar.unload()
-    normal_mode_grammar = None
-
-    global visual_mode_grammar
-    if visual_mode_grammar: visual_mode_grammar.unload()
-    visual_mode_grammar = None
-
-    global insert_mode_grammar
-    if insert_mode_grammar: insert_mode_grammar.unload()
-    insert_mode_grammar = None
-
-    global ex_mode_grammar
-    if ex_mode_grammar: ex_mode_grammar.unload()
-    ex_mode_grammar = None
+    global EXPORT_GRAMMARS
+    if EXPORT_GRAMMARS is not None:
+        for grammar in EXPORT_GRAMMARS:
+            grammar.unload()
+        EXPORT_GRAMMARS = None

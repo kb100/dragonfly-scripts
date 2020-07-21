@@ -1,5 +1,4 @@
 import logging
-import sys
 
 from dragonfly import RecognitionObserver
 
@@ -10,6 +9,7 @@ logging.getLogger('grammar.decode').propagate = False
 logging.getLogger('grammar.begin').propagate = False
 logging.getLogger('context.match').propagate = False
 logging.getLogger('action.exec').propagate = False
+
 
 # handler = logging.StreamHandler(sys.stdout)
 # handler.setLevel(log_level)
