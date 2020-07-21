@@ -6,8 +6,7 @@ The most notable file here is the one for Vim.
 The Pycharm and Visual Studio grammars branch off it,
 and they assume you have a Vim plug-in installed.
 Commands may be spoken one after another without stopping, 
-so long as they stay within the same mode, 
-except the last command, which may change mode (normal, visual, insert, ex).
+so long as there is at most one command in the sequence that changes modes (normal, visual, insert, ex).
 The Chrome grammar also assumes you are using the Vimium plug-in.
 
 ## Changing files
