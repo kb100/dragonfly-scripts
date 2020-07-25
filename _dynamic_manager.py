@@ -1,8 +1,9 @@
 import importlib
-import logging
 import traceback
 
 from dragonfly import *
+
+from log import logger
 
 
 class DynamicContext(Context):
@@ -37,11 +38,11 @@ class DynamicGrammarStateManager(RecognitionObserver):
         self.module_is_enabled = {name: False for name in grammars_grouped_by_module}
 
     def dynamic_enable(self, module_name):
-        print "dynamic enable", module_name
+        logger.info("dynamic enable" + module_name)
         if self.module_is_enabled[module_name]:
             return
         self.module_is_enabled[module_name] = True
-        print self.states_to_restore_on_manual_enable[module_name]
+        logger.info(self.states_to_restore_on_manual_enable[module_name])
         self.apply_states_to_grammars(self.grammars_grouped_by_module[module_name],
                                       self.states_to_restore_on_manual_enable[module_name])
         for name in self.grammars_grouped_by_module:
@@ -50,7 +51,7 @@ class DynamicGrammarStateManager(RecognitionObserver):
             self.dynamic_disable(name)
 
     def dynamic_disable(self, module_name):
-        print "dynamic disable", module_name
+        logger.info("dynamic disable"+ module_name)
         if not self.module_is_enabled[module_name]:
             return
         self.module_is_enabled[module_name] = False
@@ -76,7 +77,8 @@ class DynamicGrammarStateManager(RecognitionObserver):
             self.static_grammar_states = self.get_current_grammar_states()
             self.set_current_grammar_states(self.states_to_restore_on_window_focus)
 
-    def apply_states_to_grammars(self, grammars, states):
+    @staticmethod
+    def apply_states_to_grammars(grammars, states):
         for grammar, enabled in zip(grammars, states):
             grammar.disable()
             if enabled:
@@ -91,11 +93,11 @@ dynamic_module_names = ['chrome', 'pycharm', 'visual_studio']
 dynamic_modules = {}
 for name in dynamic_module_names:
     try:
-        logging.getLogger('grammar.load').info('dynamic loading ' + name)
+        logger.info('dynamic loading ' + name)
         dynamic_modules[name] = importlib.import_module(name)
     except Exception as exception:
         what = traceback.format_exc()
-        logging.getLogger('grammar.load').exception(what)
+        logger.exception(what)
 dynamic_modules = {name: importlib.import_module(name) for name in dynamic_module_names}
 
 dynamic_module_grammars = {name: dynamic_modules[name].EXPORT_GRAMMARS for name in dynamic_module_names}
@@ -137,9 +139,6 @@ def unload():
     global dynamic_modules
     if dynamic_modules:
         for name, module in dynamic_modules.iteritems():
-            logging.getLogger('grammar.load').info('dynamic unloading ' + name)
+            logger.info('dynamic unloading ' + name)
             module.unload()
     dynamic_modules = None
-# if __name__ == '__main__':
-#     print dir(Window.get_foreground())
-#     print dynamic_module_grammars

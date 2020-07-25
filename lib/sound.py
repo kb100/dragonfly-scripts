@@ -1,13 +1,7 @@
-"""A support module for Dragonfly command modules, for playing sounds.
-
------------------------------------------------------------------------------
-Licensed under the LGPL, see http://www.gnu.org/licenses/
-
-"""
-
 import os
 import winsound
 
+from log import logger
 
 WORKING_PATH = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
 SOUND_PATH = os.path.join(WORKING_PATH, "resources/sound/")
@@ -30,12 +24,13 @@ def play(sound):
     """
     flags = winsound.SND_FILENAME | winsound.SND_NODEFAULT | winsound.SND_ASYNC
     if not os.path.isfile(sound):
-        print("* Sound error: File not found '%s'. *" % sound)
+        logger.info("* Sound error: File not found '%s'. *" % sound)
     winsound.PlaySound(sound, flags)
 
 
 if __name__ == "__main__":
     import time
+
     play(SND_ACTIVATE)
     time.sleep(3)
     play(SND_DEACTIVATE)

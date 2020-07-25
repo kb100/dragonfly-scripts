@@ -6,6 +6,7 @@ from dragonfly import (Grammar,
 from dragonfly.windows.monitor import monitors
 from dragonfly.windows.rectangle import Rectangle
 from dragonfly.windows.window import Window
+from log import logger
 
 
 class PrintWindowDetails(CompoundRule):
@@ -13,19 +14,18 @@ class PrintWindowDetails(CompoundRule):
 
     def _process_recognition(self, node, extras):
         window = Window.get_foreground()
-        print 'Window details'
-        print 'title=', window.title
-        print 'executable=', window.executable
-        print 'window=', window
+        logger.info('Window details')
+        logger.info('title='+ window.title)
+        logger.info('executable='+ window.executable)
 
 
 def PrintAllWindowDetails():
     for window in Window.get_all_windows():
         if window.is_visible:
-            print 'Window details'
-            print 'title=', window.title
-            print 'executable=', window.executable
-            print 'window=', window
+            window = Window.get_foreground()
+            logger.info('Window details')
+            logger.info('title='+ window.title)
+            logger.info('executable='+ window.executable)
 
 
 # if __name__ == '__main__':
