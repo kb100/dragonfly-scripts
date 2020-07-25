@@ -95,8 +95,9 @@ single_character_key_map.update(digits_key_map)
 single_character_key_map.update(special_character_key_map)
 
 
-def LetterRef(name=None):
-    return Choice(name, single_character_key_map)
+class LetterRef(Choice):
+    def __init__(self, name=None, default=None):
+        super(LetterRef, self).__init__(name, single_character_key_map, default=default)
 
 
 class LetterSequenceRef(Modifier):
