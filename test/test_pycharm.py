@@ -2,12 +2,12 @@ import pytest
 from dragonfly import *
 from dragonfly.test import ElementTester
 
-from pycharm import pyCharmAction, PycharmGlobalRule
+from pycharm import pycharm_action, PycharmGlobalRule
 from test.utils import assert_same_typed_keys
 
 
 def test_pycharm_action(typed_keys):
-    actual = pyCharmAction('reformat')
+    actual = pycharm_action('reformat')
     expected = Key('cs-a,r,e,f,o,r,m,a,t,enter')
     assert_same_typed_keys(typed_keys, actual, expected)
 

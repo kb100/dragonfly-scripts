@@ -5,7 +5,7 @@ from lib.common import execute_select, LetterRef
 from python_language import PythonRule
 
 
-def pyCharmAction(s):
+def pycharm_action(s):
     return Key("cs-a/10") + Text(s) + Pause("50") + Key("enter")
 
 
@@ -43,10 +43,10 @@ class PycharmGlobalRule(MappingRule):
         'new (file|dot dot dot)': Key('a-f/20,a-insert'),
         'panel <n>': Key('a-%(n)d'),
         'close tab': Key('c-f4'),
-        'close (all but this|others)': pyCharmAction('close others'),
-        'close left': pyCharmAction('close all to the left'),
-        'close right': pyCharmAction('close all to the right'),
-        'unsplit': pyCharmAction('unsplit'),
+        'close (all but this|others)': pycharm_action('close others'),
+        'close left': pycharm_action('close all to the left'),
+        'close right': pycharm_action('close all to the right'),
+        'unsplit': pycharm_action('unsplit'),
         'git commit': Key('c-k'),
         'git pull': Key('a-s/20,a-u'),
         'git push': Key('cs-k'),

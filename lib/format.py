@@ -111,7 +111,7 @@ def format_prose(dictation):
     return str(dictation)
 
 
-def FormatAction(function):
+def make_format_action(function):
     def wrap_function(f):
         def _function(dictation):
             formatted_text = f(dictation)
@@ -123,19 +123,19 @@ def FormatAction(function):
     return action
 
 
-def FormatMapping(functions):
+def make_format_mapping(functions):
     format_functions = {}
     for function in functions:
         spoken_form = function.__doc__.strip()
-        action = FormatAction(function)
+        action = make_format_action(function)
         format_functions[spoken_form] = action
     return format_functions
 
 
-ALL_FORMAT_FUNCTIONS = [function for name, function in globals().items()
-                        if name.startswith("format_") and callable(function)]
+ALL_FORMAT_FUNCTIONS = [func for name, func in globals().items()
+                        if name.startswith("format_") and callable(func)]
 
 
 class FormatRule(MappingRule):
-    mapping = FormatMapping(ALL_FORMAT_FUNCTIONS)
+    mapping = make_format_mapping(ALL_FORMAT_FUNCTIONS)
     extras = [Dictation("dictation")]

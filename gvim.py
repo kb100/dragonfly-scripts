@@ -255,11 +255,11 @@ def mark(s):
     return Key('m,' + s)
 
 
-def jumpMark(s):
+def jump_mark(s):
     return Key('backtick,' + s)
 
 
-def goToLine(s):
+def go_line(s):
     return Key("colon") + Text("%(" + s + ")d\n") + Pause('10')
 
 
@@ -345,9 +345,9 @@ class NormalModeCommands(MappingRule):
         'jump old': Key('c-o'),
         'jump new': Key('c-i'),
 
-        '<ln> thru <lm> comment': mark('z') + goToLine('lm') + mark('y') +
-                                  goToLine('ln') + Text('V') + jumpMark('y') +
-                                  Key('c-slash') + Key('escape') + jumpMark('z'),
+        '<ln> thru <lm> comment': mark('z') + go_line('lm') + mark('y') +
+                                  go_line('ln') + Text('V') + jump_mark('y') +
+                                  Key('c-slash') + Key('escape') + jump_mark('z'),
         '<ln> thru <lm> (copy|yank)': Key('colon/10') + Text("%(ln)d,%(lm)dy\n"),
 
         # Pete is shorthand for repeat

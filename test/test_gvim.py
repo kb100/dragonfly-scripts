@@ -226,13 +226,13 @@ def test_mark(typed_keys):
 
 
 def test_jump_to_mark(typed_keys):
-    actual = jumpMark('a')
+    actual = jump_mark('a')
     expected = Key('backtick,a')
     assert_same_typed_keys(typed_keys, actual, expected)
 
 
 def test_go_to_line(typed_keys):
-    actual = goToLine('n').bind({'n': 100})
+    actual = go_line('n').bind({'n': 100})
     expected = Text(':100\n')
     assert_same_typed_keys(typed_keys, actual, expected)
 

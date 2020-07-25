@@ -10,10 +10,10 @@ def typed_keys(monkeypatch):
     expected_buffer = []
     ret = {'buffer': events_buffer, 'actual': actual_buffer, 'expected': expected_buffer}
 
-    def send_keyboard_events(cls, events):
+    def send_keyboard_events(_cls, events):
         events_buffer.extend([(key, down) for key, down, pause_time in events])
 
-    def pause(self, interval):
+    def pause(_self, _interval):
         return True
 
     def execute(self, data=None):

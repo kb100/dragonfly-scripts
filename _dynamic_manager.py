@@ -32,7 +32,7 @@ class DynamicGrammarStateManager(RecognitionObserver):
         self.grammars_grouped_by_module = grammars_grouped_by_module
         self.modules_by_name = modules_by_name
         self.static_grammar_states = self.get_current_grammar_states()
-        self.states_to_restore_on_window_focus = {name: [False for grammar in grammars]
+        self.states_to_restore_on_window_focus = {name: [False for _ in grammars]
                                                   for name, grammars in grammars_grouped_by_module.iteritems()}
         self.states_to_restore_on_manual_enable = self.get_current_grammar_states()
         self.module_is_enabled = {name: False for name in grammars_grouped_by_module}
@@ -51,14 +51,14 @@ class DynamicGrammarStateManager(RecognitionObserver):
             self.dynamic_disable(name)
 
     def dynamic_disable(self, module_name):
-        logger.info("dynamic disable"+ module_name)
+        logger.info("dynamic disable" + module_name)
         if not self.module_is_enabled[module_name]:
             return
         self.module_is_enabled[module_name] = False
         self.states_to_restore_on_manual_enable[module_name] = [grammar.enabled for grammar in
                                                                 self.grammars_grouped_by_module[module_name]]
         self.apply_states_to_grammars(self.grammars_grouped_by_module[module_name],
-                                      [False for grammar in self.grammars_grouped_by_module[module_name]])
+                                      [False for _ in self.grammars_grouped_by_module[module_name]])
 
     def get_current_grammar_states(self):
         return {name: [grammar.enabled for grammar in grammars]
@@ -91,10 +91,10 @@ class DynamicGrammarStateManager(RecognitionObserver):
 
 dynamic_module_names = ['chrome', 'pycharm', 'visual_studio']
 dynamic_modules = {}
-for name in dynamic_module_names:
+for mod_name in dynamic_module_names:
     try:
-        logger.info('dynamic loading ' + name)
-        dynamic_modules[name] = importlib.import_module(name)
+        logger.info('dynamic loading ' + mod_name)
+        dynamic_modules[mod_name] = importlib.import_module(mod_name)
     except Exception as exception:
         what = traceback.format_exc()
         logger.exception(what)
@@ -103,15 +103,15 @@ dynamic_modules = {name: importlib.import_module(name) for name in dynamic_modul
 dynamic_module_grammars = {name: dynamic_modules[name].EXPORT_GRAMMARS for name in dynamic_module_names}
 citrix_context = AppContext(executable='notepad')
 nomachine_context = AppContext(executable='nxplayer')
-focus_context = citrix_context | nomachine_context
+citrix_or_nomachine_context = citrix_context | nomachine_context
 
-for name, grammars in dynamic_module_grammars.iteritems():
-    for grammar in grammars:
-        if not isinstance(grammar._context, DynamicContext):
-            grammar._context = DynamicContext(fallback=grammar._context, focus_context=focus_context)
+for mod_name, export_grammars in dynamic_module_grammars.iteritems():
+    for gram in export_grammars:
+        if not isinstance(gram._context, DynamicContext):
+            gram._context = DynamicContext(fallback=gram._context, focus_context=citrix_or_nomachine_context)
 
 manager = DynamicGrammarStateManager(dynamic_module_grammars, dynamic_modules,
-                                     DynamicContext(fallback=None, focus_context=focus_context))
+                                     DynamicContext(fallback=None, focus_context=citrix_or_nomachine_context))
 manager.register()
 
 spoken_modules = {"chrome": "chrome", "pycharm": "pycharm", "visual studio": "visual_studio"}
