@@ -28,11 +28,11 @@ class VimGrammarSwitcher(GrammarSwitcher):
             VimMode.VISUAL: visual,
             VimMode.EX: ex,
         }
-        grammars = [g for g in self.modes.itervalues() if g is not None]
+        grammars = [g for g in self.modes.values() if g is not None]
         super(VimGrammarSwitcher, self).__init__(grammars)
 
     def __str__(self):
-        active = [mode for mode, gram in self.modes.iteritems() if gram and gram.enabled]
+        active = [mode for mode, gram in self.modes.items() if gram and gram.enabled]
         return str(self.__class__) + str(active)
 
     def switch_to_mode(self, mode):
@@ -160,8 +160,8 @@ text_object_selection_objects = {
     "(backtick|tick|grave)": "backtick",
 }
 text_object_keys = {}
-for sp1, k1 in text_object_selection_exclusive_keys.iteritems():
-    for sp2, k2 in text_object_selection_objects.iteritems():
+for sp1, k1 in text_object_selection_exclusive_keys.items():
+    for sp2, k2 in text_object_selection_objects.items():
         text_object_keys[sp1 + ' ' + sp2] = k1 + ',' + k2
 paired_symbols_keys = {
     "(bracket|lack|rack)": "lbracket,rbracket",
@@ -235,7 +235,7 @@ find_motion_keys = {
 
 class FindMotionRef(Choice):
     def __init__(self, name, default=None):
-        choices = {k + ' <letter>': f for k, f in find_motion_keys.iteritems()}
+        choices = {k + ' <letter>': f for k, f in find_motion_keys.items()}
         extras = [LetterRef('letter')]
         super(FindMotionRef, self).__init__(name, choices, extras, default)
 
@@ -248,7 +248,7 @@ class FindMotionRef(Choice):
 valid_registers = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
                    'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'dot', 'percent',
                    'hash', 'colon', 'dquote']
-register_keys = {k: v for k, v in single_character_key_map.iteritems() if v.lower() in valid_registers}
+register_keys = {k: v for k, v in single_character_key_map.items() if v.lower() in valid_registers}
 
 
 def mark(s):
@@ -728,13 +728,13 @@ def get_commands():
 
 def transitions_into_mode(transitions, mode):
     return list(chain.from_iterable(
-        rules for (source, destination), rules in transitions.iteritems() if destination is mode
+        rules for (source, destination), rules in transitions.items() if destination is mode
     ))
 
 
 def transitions_out_of_mode(transitions, mode):
     return list(chain.from_iterable(
-        rules for (source, destination), rules in transitions.iteritems() if source is mode
+        rules for (source, destination), rules in transitions.items() if source is mode
     ))
 
 

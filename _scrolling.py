@@ -3,6 +3,8 @@ import time
 from dragonfly import *
 from dragonfly.engines.base.timer import Timer
 from enum import Enum
+from typing import Optional
+
 
 
 class ScrollType(Enum):
@@ -13,9 +15,9 @@ class ScrollType(Enum):
 
 
 class ScrollState(object):
-    timer = None  # type: Timer
-    speed = 0  # type: int
-    action = ScrollType.WHEEL_DOWN  # type: ScrollType
+    timer: Optional[Timer] = None
+    speed: int = 0
+    action: ScrollType = ScrollType.WHEEL_DOWN
 
     @classmethod
     def reset(cls):

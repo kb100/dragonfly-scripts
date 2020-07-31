@@ -80,7 +80,7 @@ grammars, grammar_switcher = make_vim_grammars(commands, transitions, context, p
 pycharm_grammar = Grammar('pycharm global', context=context)
 pycharm_grammar.add_rule(PycharmGlobalRule())
 
-EXPORT_GRAMMARS = list(grammars.itervalues()) + [pycharm_grammar]
+EXPORT_GRAMMARS = list(grammars.values()) + [pycharm_grammar]
 grammars = None
 for grammar in EXPORT_GRAMMARS:
     grammar.load()

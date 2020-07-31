@@ -57,7 +57,7 @@ grammars, grammar_switcher = make_vim_grammars(commands, transitions, context, p
 visual_studio_grammar = Grammar('VStudio global', context=context)
 visual_studio_grammar.add_rule(VisualStudioGlobalRule())
 
-EXPORT_GRAMMARS = list(grammars.itervalues()) + [visual_studio_grammar]
+EXPORT_GRAMMARS = list(grammars.values()) + [visual_studio_grammar]
 grammars = None
 for grammar in EXPORT_GRAMMARS:
     grammar.load()

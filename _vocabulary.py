@@ -24,7 +24,7 @@ def clear_vocabulary():
 
 def type_out_vocabulary():
     action = Text('%(key)s: %(value)s')
-    for k, v in vocab_dict.iteritems():
+    for k, v in vocab_dict.items():
         action.bind({'key': k, 'value': v}).execute()
 
 

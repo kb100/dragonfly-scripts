@@ -33,7 +33,7 @@ class DynamicGrammarStateManager(RecognitionObserver):
         self.modules_by_name = modules_by_name
         self.static_grammar_states = self.get_current_grammar_states()
         self.states_to_restore_on_window_focus = {name: [False for _ in grammars]
-                                                  for name, grammars in grammars_grouped_by_module.iteritems()}
+                                                  for name, grammars in grammars_grouped_by_module.items()}
         self.states_to_restore_on_manual_enable = self.get_current_grammar_states()
         self.module_is_enabled = {name: False for name in grammars_grouped_by_module}
 
@@ -62,7 +62,7 @@ class DynamicGrammarStateManager(RecognitionObserver):
 
     def get_current_grammar_states(self):
         return {name: [grammar.enabled for grammar in grammars]
-                for name, grammars in self.grammars_grouped_by_module.iteritems()}
+                for name, grammars in self.grammars_grouped_by_module.items()}
 
     def on_begin(self):
         window = Window.get_foreground()
@@ -85,7 +85,7 @@ class DynamicGrammarStateManager(RecognitionObserver):
                 grammar.enable()
 
     def set_current_grammar_states(self, grammar_states):
-        for name, grammars in self.grammars_grouped_by_module.iteritems():
+        for name, grammars in self.grammars_grouped_by_module.items():
             self.apply_states_to_grammars(grammars, grammar_states[name])
 
 
@@ -105,7 +105,7 @@ citrix_context = AppContext(executable='notepad')
 nomachine_context = AppContext(executable='nxplayer')
 citrix_or_nomachine_context = citrix_context | nomachine_context
 
-for mod_name, export_grammars in dynamic_module_grammars.iteritems():
+for mod_name, export_grammars in dynamic_module_grammars.items():
     for gram in export_grammars:
         if not isinstance(gram._context, DynamicContext):
             gram._context = DynamicContext(fallback=gram._context, focus_context=citrix_or_nomachine_context)
@@ -138,7 +138,7 @@ def unload():
 
     global dynamic_modules
     if dynamic_modules:
-        for name, module in dynamic_modules.iteritems():
+        for name, module in dynamic_modules.items():
             logger.info('dynamic unloading ' + name)
             module.unload()
     dynamic_modules = None
