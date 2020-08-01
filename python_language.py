@@ -1,4 +1,4 @@
-from dragonfly import *
+from dragonfly import MappingRule, Key, Text
 
 
 class PythonRule(MappingRule):
@@ -34,7 +34,7 @@ class PythonRule(MappingRule):
         "if": Text("if "),
         "in": Text(" in "),
         "is": Text(" is "),
-        'is instance': Text('isinstance()')+Key('left'),
+        'is instance': Text('isinstance()') + Key('left'),
         "(int|I N T)": Text("int()") + Key("left"),
         "init": Text("init"),
         "import": Text("import "),

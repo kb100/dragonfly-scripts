@@ -1,10 +1,9 @@
 import time
-
-from dragonfly import *
-from dragonfly.engines.base.timer import Timer
 from enum import Enum
 from typing import Optional
 
+from dragonfly import MappingRule, Key, Grammar, Mouse, Function, IntegerRef, Choice
+from dragonfly.engines.base.timer import Timer
 
 
 class ScrollType(Enum):

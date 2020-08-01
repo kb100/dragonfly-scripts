@@ -1,5 +1,4 @@
-from dragonfly import *
-from dragonfly.windows import Clipboard
+from dragonfly import MappingRule, Function, Dictation, Grammar, DictList, DictListRef, Text, Clipboard
 
 clipboard = Clipboard()
 vocab_dict = DictList('vocab_dict')
@@ -40,7 +39,6 @@ class VocabRule(MappingRule):
         Dictation('text'),
         DictListRef('vocab', vocab_dict)
     ]
-    defaults = {}
 
 
 vocab_grammar = Grammar('vocab grammar')

@@ -1,4 +1,5 @@
-from dragonfly import *
+from dragonfly import MappingRule, Function, Key, Mouse, Pause, Repeat, Dictation, IntegerRef, Grammar, Text, \
+    ShortIntegerRef, AppContext
 
 from lib.common import LetterSequenceRef
 

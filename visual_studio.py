@@ -1,4 +1,4 @@
-﻿from dragonfly import *
+﻿from dragonfly import MappingRule, Function, Key, Pause, IntegerRef, Grammar, Text, AppContext
 
 from cpp_language import CPlusPlusRule
 from gvim import VimMode, get_commands, get_transitions, make_vim_grammars

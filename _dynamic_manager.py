@@ -1,14 +1,14 @@
 import importlib
 import traceback
 
-from dragonfly import *
+from dragonfly import Context, RecognitionObserver, AppContext, MappingRule, Function, Choice, Grammar, Window
 
 from log import logger
 
 
 class DynamicContext(Context):
     def __init__(self, fallback, focus_context):
-        super(Context, self).__init__()
+        super(DynamicContext, self).__init__()
         self.fallback = fallback
         self.focus_context = focus_context
 
@@ -26,7 +26,7 @@ class DynamicContext(Context):
 class DynamicGrammarStateManager(RecognitionObserver):
 
     def __init__(self, grammars_grouped_by_module, modules_by_name, dynamic_context):
-        super(RecognitionObserver, self).__init__()
+        super(DynamicGrammarStateManager, self).__init__()
         self.is_dynamic_active = False
         self.context = dynamic_context
         self.grammars_grouped_by_module = grammars_grouped_by_module
@@ -94,13 +94,18 @@ dynamic_modules = {}
 for mod_name in dynamic_module_names:
     try:
         logger.info('dynamic loading ' + mod_name)
-        dynamic_modules[mod_name] = importlib.import_module(mod_name)
+        module = importlib.import_module(mod_name)
+        dynamic_modules[mod_name] = module
+        if not hasattr(module, 'EXPORT_GRAMMARS'):  # note: mypy false positive, we check for existence of this attrib
+            raise ValueError(f'EXPORT_GRAMMARS not found in dynamic module {mod_name}')
+        elif not isinstance(module.EXPORT_GRAMMARS, list):  # type: ignore
+            raise TypeError(f'EXPORT_GRAMMARS must be a list')
     except Exception as exception:
         what = traceback.format_exc()
         logger.exception(what)
 dynamic_modules = {name: importlib.import_module(name) for name in dynamic_module_names}
 
-dynamic_module_grammars = {name: dynamic_modules[name].EXPORT_GRAMMARS for name in dynamic_module_names}
+dynamic_module_grammars = {name: dynamic_modules[name].EXPORT_GRAMMARS for name in dynamic_module_names}  # type: ignore
 citrix_context = AppContext(executable='notepad')
 nomachine_context = AppContext(executable='nxplayer')
 citrix_or_nomachine_context = citrix_context | nomachine_context

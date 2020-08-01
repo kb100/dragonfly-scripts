@@ -1,4 +1,4 @@
-﻿from dragonfly import *
+﻿from dragonfly import MappingRule, Function, Key, Pause, IntegerRef, Grammar, Text, Mimic, AppContext
 
 from gvim import get_commands, get_transitions, make_vim_grammars, VimMode
 from lib.common import execute_select, LetterRef

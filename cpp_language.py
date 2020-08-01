@@ -1,4 +1,4 @@
-from dragonfly import *
+from dragonfly import MappingRule, Text, Key
 
 
 class CPlusPlusRule(MappingRule):

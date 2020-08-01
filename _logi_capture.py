@@ -1,4 +1,4 @@
-from dragonfly import *
+from dragonfly import MappingRule, Key, Grammar
 
 rules = MappingRule(
     name="logiCapture",
@@ -7,7 +7,7 @@ rules = MappingRule(
         '(pause|unpause) recording': Key('a-p'),
     },
 )
-context = None  # AppContext(executable="logiCapture")
+context: None = None  # AppContext(executable="logiCapture")
 logi_capture_grammar = Grammar("logiCapture", context=context)
 logi_capture_grammar.add_rule(rules)
 logi_capture_grammar.load()

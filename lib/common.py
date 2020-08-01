@@ -1,4 +1,4 @@
-from dragonfly import *
+from dragonfly import Key, Choice, Modifier, Repetition, MappingRule
 
 release = Key("shift:up, ctrl:up")
 

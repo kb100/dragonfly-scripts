@@ -1,4 +1,4 @@
-from dragonfly import *
+from dragonfly import MappingRule, Key, Grammar
 
 
 class NomachineRule(MappingRule):

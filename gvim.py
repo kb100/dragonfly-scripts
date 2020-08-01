@@ -1,8 +1,10 @@
-﻿import logging
+﻿import enum
+import logging
 from itertools import chain
+from typing import List, Union
 
-import enum
-from dragonfly import *
+from dragonfly import MappingRule, Function, Key, Pause, Repeat, Dictation, IntegerRef, Grammar, CompoundRule, \
+    Rule, RuleRef, Choice, Text, ShortIntegerRef, ElementBase
 
 from lib.actions import MarkedAction
 from lib.common import LetterRef, LetterSequenceRef, single_character_key_map
@@ -62,8 +64,8 @@ class VimGrammarSwitcher(GrammarSwitcher):
 
 
 class TransitionThenRepeatRule(CompoundRule):
-    non_transitions = []
-    transitions = []
+    non_transitions: List[Union[Rule, ElementBase]] = []
+    transitions: List[Union[Rule, ElementBase]] = []
 
     def __init__(self, vim_mode_switcher=None, non_transitions=None, transitions=None, name=None, exported=None):
         if vim_mode_switcher is not None: assert isinstance(vim_mode_switcher, VimGrammarSwitcher)
@@ -100,8 +102,8 @@ class TransitionThenRepeatRule(CompoundRule):
 
 
 class RepeatThenTransitionRule(CompoundRule):
-    non_transitions = []
-    transitions = []
+    non_transitions: List[Union[Rule, ElementBase]] = []
+    transitions: List[Union[Rule, ElementBase]] = []
 
     def __init__(self, vim_mode_switcher=None, non_transitions=None, transitions=None, name=None, exported=None):
         if vim_mode_switcher is not None: assert isinstance(vim_mode_switcher, VimGrammarSwitcher)

@@ -1,4 +1,5 @@
-from dragonfly import *
+from dragonfly import MappingRule, Key, Grammar, Text, ShortIntegerRef, Dictation, AppContext
+
 from lib.common import LetterSequenceRef, release
 
 rules = MappingRule(
@@ -13,7 +14,7 @@ rules = MappingRule(
         "[show] keyboard shortcuts": Key("c-slash"),
         "[direct] messages": Key("cs-k"),
         "[browse] channels": Key("cs-l"),
-        "edit last [message]": Key("c-up"), # in empty text input
+        "edit last [message]": Key("c-up"),  # in empty text input
         "back": Key("a-left"),
         "forward": Key("a-right"),
         "[show] threads": Key("cs-t"),
@@ -90,6 +91,8 @@ slack_grammar.add_rule(rules)
 slack_grammar.load()
 
 EXPORT_GRAMMARS = [slack_grammar]
+
+
 def unload():
     global slack_grammar
     if slack_grammar: slack_grammar.unload()

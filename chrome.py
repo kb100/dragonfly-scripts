@@ -1,6 +1,6 @@
-from dragonfly import *
-from lib.common import LetterSequenceRef, release, execute_select
+from dragonfly import MappingRule, Key, Text, AppContext, Grammar, Dictation, ShortIntegerRef, Function
 
+from lib.common import LetterSequenceRef, release, execute_select
 
 rules = MappingRule(
     name="chrome",
@@ -90,6 +90,8 @@ chrome_grammar.add_rule(rules)
 chrome_grammar.load()
 
 EXPORT_GRAMMARS = [chrome_grammar]
+
+
 def unload():
     global chrome_grammar
     if chrome_grammar: chrome_grammar.unload()

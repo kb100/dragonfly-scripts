@@ -1,4 +1,4 @@
-from dragonfly import *
+from dragonfly import MappingRule, Function, Key, Mouse, Pause, Repeat, Dictation, IntegerRef, Grammar
 
 from lib.common import SpellLetterSequenceRule
 from lib.format import FormatRule
