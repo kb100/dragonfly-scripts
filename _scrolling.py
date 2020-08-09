@@ -2,7 +2,7 @@ import time
 from enum import Enum
 from typing import Optional
 
-from dragonfly import MappingRule, Key, Grammar, Mouse, Function, IntegerRef, Choice
+from dragonfly import MappingRule, Key, Grammar, Mouse, Function, IntegerRef, Choice, get_engine
 from dragonfly.engines.base.timer import Timer
 
 
@@ -13,7 +13,7 @@ class ScrollType(Enum):
     PAGE_UP = Key('pageup')
 
 
-class ScrollState(object):
+class ScrollState:
     timer: Optional[Timer] = None
     speed: int = 0
     action: ScrollType = ScrollType.WHEEL_DOWN
